@@ -16,5 +16,14 @@
     <script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v4.4.2.min.js"></script>
     <script src="kineticjs-test.js" defer="defer"></script>
   </head>
-  <body id="container"></body>
+  <body id="container">
+   <div STYLE="position:absolute; left:550px;" >
+      <h3>Control The Vehicle</h3>
+      Direction: <input type="text" name="direction" id="direction"><br>
+      Speed: <input type="text" name="speed" id="speed"><br>
+      Rate of Rotation: <input type="text" name="rotation" id="rotation"><br>
+      <button onclick="goPressed(document.getElementById('direction').value, document.getElementById('speed').value, document.getElementById('rotation').value)">Go</button>
+      <button onclick="reset()">Reset</button>
+   </div>
+  </body>
 </html>
