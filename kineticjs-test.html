@@ -19,9 +19,9 @@
   <body id="container">
    <div STYLE="position:absolute; left:550px;" >
       <h3>Control The Vehicle</h3>
-      Direction: <input type="text" name="direction" id="direction"><br>
-      Speed: <input type="text" name="speed" id="speed"><br>
-      Rate of Rotation: <input type="text" name="rotation" id="rotation"><br>
+      Direction: (deg)<input type="text" name="direction" id="direction"><br>
+      Speed: (ft/sec)<input type="text" name="speed" id="speed"><br>
+      Rate of Rotation: (deg/sec)<input type="text" name="rotation" id="rotation"><br>
       <button onclick="goPressed(document.getElementById('direction').value, document.getElementById('speed').value, document.getElementById('rotation').value)">Go</button>
       <button onclick="reset()">Reset</button>
    </div>
