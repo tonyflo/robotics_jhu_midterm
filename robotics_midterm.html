@@ -14,7 +14,7 @@
       }
     </style>
     <script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v4.4.2.min.js"></script>
-    <script src="kineticjs-test.js" defer="defer"></script>
+    <script src="robotics_midterm.js" defer="defer"></script>
   </head>
   <body id="container">
    <div STYLE="position:absolute; left:550px;" >
@@ -27,10 +27,11 @@
    </div>
    <div STYLE="position:absolute; left:550px; bottom:200px" >
       <h3>Info</h3>
-      <table>
-         <tr><td>State:</td><td id="state">Not Animating</td></tr>
-         <tr><td>X:</td><td id="x_coord">0</td></tr>
-         <tr><td>Y:</td><td id="y_coord">0</td></tr>
+      <table border="1">
+         <tr><td>State:</td><td id="state" colspan="2">Not Animating</td></tr>
+         <tr><td>X:</td><td id="x_coord">0</td><td>ft</td></tr>
+         <tr><td>Y:</td><td id="y_coord">0</td><td>ft</td></tr>
+         <tr><td>Rotation:</td><td id="cur_rot">0</td><td>deg</td></tr>
       </table>
    </div>
   </body>

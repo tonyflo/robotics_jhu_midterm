@@ -36,6 +36,8 @@ var GLOBAL_X = 0; //global vehicle x coordinate
 var GLOBAL_Y = 0; //global vehicle y coordinate
 var CANVAS_X = 0; //canvas vehicle x coordinate
 var CANVAS_Y = 0; //canvas vehicle y coordinate
+var DEGREES_IN_CIRCLE = 360; //degrees in a circle
+var NUM_DEC_PLACES = 2; //number of decimals places to show
 
 //single stage that contains the grid and vehicle
 var stage = new Kinetic.Stage({
@@ -80,7 +82,7 @@ var bby = rect.getPosition().y + feetToPixels(BUFFER);
  * Debug
  *
  ****************************/
-var DEBUG = true;
+var DEBUG = false;
  
 //draw bounds markers
 if(DEBUG)
@@ -159,12 +161,15 @@ var anim = new Kinetic.Animation(function(frame)
    CANVAS_Y = pixelsToFeet(Math.abs(newY - CENTER_Y))
    
    //update the diagnostic coordinates text on the page
-   document.getElementById("x_coord").innerHTML=GLOBAL_X + CANVAS_X;
-   document.getElementById("y_coord").innerHTML=GLOBAL_Y + CANVAS_Y;
+   document.getElementById("x_coord").innerHTML=(GLOBAL_X + CANVAS_X).toFixed(NUM_DEC_PLACES);
+   document.getElementById("y_coord").innerHTML=(GLOBAL_Y + CANVAS_Y).toFixed(NUM_DEC_PLACES);
 
    //TODO: this isn't actually deg/sec
    //rotate the vehicle
    rect.rotate(ROTATION/1000);
+   
+   //update the diagnostic vehicle rotation
+   document.getElementById("cur_rot").innerHTML=(rect.getRotationDeg() % DEGREES_IN_CIRCLE).toFixed(NUM_DEC_PLACES);
 
    //check to see if view needs to be repositioned
    checkRepositionView()
@@ -184,7 +189,7 @@ function drawGridlines()
    var gridLayer = new Kinetic.Layer();
 
    //draw horizontal grid-lines
-   for(var i = 0; i < NUM_VERT_GRIDS; i++)
+   for(var i = 0; i <= NUM_VERT_GRIDS; i++)
    {
       var col = i*(WIDTH_PX/NUM_VERT_GRIDS);
       var line = new Kinetic.Line({
@@ -195,8 +200,8 @@ function drawGridlines()
       gridLayer.add(line);
    }
 
-   //draw verticle grid-lines
-   for(var i = 0; i < NUM_HORIZ_GRIDS; i++)
+   //draw vertical grid-lines
+   for(var i = 0; i <= NUM_HORIZ_GRIDS; i++)
    {
       var row = i*(HEIGHT_PX/NUM_HORIZ_GRIDS);
       var line = new Kinetic.Line({
@@ -304,7 +309,9 @@ function checkRepositionView()
    bty = rect.getPosition().y - (Math.cos(rect.getRotation()) * feetToPixels(BUFFER));
    bbx = rect.getPosition().x - (Math.sin(rect.getRotation()) * feetToPixels(BUFFER));
    bby = rect.getPosition().y + (Math.cos(rect.getRotation()) * feetToPixels(BUFFER));
-   
+
+if(DEBUG)
+{
    a.setX(brx);
    a.setY(bry);
    b.setX(blx);
@@ -313,6 +320,7 @@ function checkRepositionView()
    c.setY(bty);
    d.setX(bbx);
    d.setY(bby);
+}
 
    if(blx < BOUNDS_LEFT || brx < BOUNDS_LEFT || btx < BOUNDS_LEFT || bbx < BOUNDS_LEFT ||
       blx > BOUNDS_RIGHT || brx > BOUNDS_RIGHT || btx > BOUNDS_RIGHT || bbx > BOUNDS_RIGHT || 
