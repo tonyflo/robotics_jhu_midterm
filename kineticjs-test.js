@@ -1,10 +1,25 @@
+/* Tony Florida
+ * EN 605.713 Robotics
+ * Johns Hopkins University
+ * Midterm Project
+ * Given: 29 Jan 2014
+ * Due: 12 Mar 2014
+ */
+
 /****************************
  *
  * Global Variables
  *
  ****************************/
+//state variables
  var animating = false; //state of animation
+
+//control variables
+var SPEED = 0;
+var DIRECTION = 0;
+var ROTATION = 0;
  
+//canvas variables
 var WIDTH_PX = 500; //width of canvas
 var HEIGHT_PX = 1000; //height of canvas
 var WIDTH_FT = 10; //simulated width of canvas in feet
@@ -17,8 +32,10 @@ var VEHICLE_HEIGHT = 4*FT_2_CELL*(WIDTH_PX/NUM_VERT_GRIDS); //height pixels
 var SECOND_MS = 1000; //number of milliseconds in a second
 var CENTER_X = WIDTH_PX /2; //center of canvas x
 var CENTER_Y = HEIGHT_PX/2; //center of canvas y
-var GLOBAL_X = CENTER_X; //global vehicle x coordinate
-var GLOBAL_Y = CENTER_Y; //global vehicle y coordinate
+var GLOBAL_X = 0; //global vehicle x coordinate
+var GLOBAL_Y = 0; //global vehicle y coordinate
+var CANVAS_X = 0; //canvas vehicle x coordinate
+var CANVAS_Y = 0; //canvas vehicle y coordinate
 
 //single stage that contains the grid and vehicle
 var stage = new Kinetic.Stage({
@@ -40,7 +57,7 @@ var rect = new Kinetic.Rect({
   stroke: 'black',
   strokeWidth: 4,
   offset: [VEHICLE_WIDTH/2, VEHICLE_HEIGHT/2] //set center as vehicle reference
-});
+}); //end rect
 
 var BUFFER = 3; //if vehicle is within this number of feet, the view will center
 var BOUNDS_LEFT = 0; //left edge of the canvas
@@ -63,7 +80,6 @@ var bby = rect.getPosition().y + feetToPixels(BUFFER);
  * Debug
  *
  ****************************/
-
 var DEBUG = true;
  
 //draw bounds markers
@@ -110,7 +126,50 @@ if(DEBUG)
    vehicleLayer.add(b);
    vehicleLayer.add(c);
    vehicleLayer.add(d);
-}
+} //end debug
+
+/****************************
+ *
+ * Animations
+ *
+ ****************************/
+ 
+ /* @brief The main animation object that moves the vehicle 
+  */
+var anim = new Kinetic.Animation(function(frame) 
+{
+   //var time = frame.time,
+   //timeDiff = frame.timeDiff,
+   //frameRate = frame.frameRate;
+   
+   //determine x component of speed value
+   var speedX = feetToPixels(SPEED) * Math.cos(toRadians(DIRECTION));
+   var newX = rect.getPosition().x + (speedX * frame.timeDiff) / SECOND_MS;
+   
+   //determine y component of speed value
+   var speedY = feetToPixels(SPEED) * Math.sin(toRadians(DIRECTION));
+   var newY = rect.getPosition().y + (speedY * frame.timeDiff) / SECOND_MS;
+   
+   //move the vehicle
+   rect.setX(newX);
+   rect.setY(newY);
+   
+   //update global vehicle coordinates
+   CANVAS_X = pixelsToFeet(newX - CENTER_X);
+   CANVAS_Y = pixelsToFeet(Math.abs(newY - CENTER_Y))
+   
+   //update the diagnostic coordinates text on the page
+   document.getElementById("x_coord").innerHTML=GLOBAL_X + CANVAS_X;
+   document.getElementById("y_coord").innerHTML=GLOBAL_Y + CANVAS_Y;
+
+   //TODO: this isn't actually deg/sec
+   //rotate the vehicle
+   rect.rotate(ROTATION/1000);
+
+   //check to see if view needs to be repositioned
+   checkRepositionView()
+
+}, vehicleLayer); //end anim 
 
 /****************************
  *
@@ -176,7 +235,6 @@ function goPressed(direction, speed, rotation)
    {
       //adjust angles so that vehicle and global coordinate systems initially line up
       direction -= 90;
-      animating = true;
       animate(direction, speed, rotation);
    }
 } //end goPressed
@@ -222,44 +280,15 @@ function goPressed(direction, speed, rotation)
  */
 function animate(direction, speed, rotation)
 {
-
-   var anim = new Kinetic.Animation(function(frame) 
-   {
-      //var time = frame.time,
-      //timeDiff = frame.timeDiff,
-      //frameRate = frame.frameRate;
-      
-      //determine x component of speed value
-      var speedX = feetToPixels(speed) * Math.cos(toRadians(direction));
-      var newX = rect.getPosition().x + (speedX * frame.timeDiff) / SECOND_MS;
-      
-      //determine y component of speed value
-      var speedY = feetToPixels(speed) * Math.sin(toRadians(direction));
-      var newY = rect.getPosition().y + (speedY * frame.timeDiff) / SECOND_MS;
-      
-      //move the vehicle
-      rect.setX(newX - CENTER_X);
-      rect.setY(Math.abs(newY - CENTER_Y));
-      
-      //update global vehicle reference point
-      GLOBAL_X += pixelsToFeet(newX - CENTER_X);
-      GLOBAL_Y += pixelsToFeet(Math.abs(newY - CENTER_Y));
-      
-      //update the diagnostic coordinates text on the page
-      document.getElementById("x_coord").innerHTML=GLOBAL_X;
-      document.getElementById("y_coord").innerHTML=GLOBAL_Y;
-
-      //TODO: this isn't actually deg/sec
-      //rotate the vehicle
-      rect.rotate(rotation/1000);
-
-      //check to see if view needs to be repositioned
-      checkRepositionView()
-
-   }, vehicleLayer);
-  
-  anim.start();
-
+   //set animation variables
+   DIRECTION = direction;
+   SPEED = speed;
+   ROTATION = rotation;
+   
+   //set state of animation to animating
+   animating = true;
+   anim.start();
+   document.getElementById("state").innerHTML="Animating";
 } //end animate
 
 //reposition viewable area when vehicle reference point travels within 3 feet of screen edge
@@ -296,6 +325,11 @@ function checkRepositionView()
 
 function repositionView()
 {
+   //update the global vehicle reference coordinates
+   GLOBAL_X += CANVAS_X;
+   GLOBAL_Y += CANVAS_Y;
+   
+   //center the vehicle
    rect.setX(CENTER_X);
    rect.setY(CENTER_Y);
 }
@@ -340,3 +374,42 @@ function reset()
  ****************************/
 drawGridlines();
 drawVehicle();
+
+/****************************
+ *
+ * Listeners
+ *
+ ****************************/
+ 
+/* @brief Detect a key press and stop animation
+ */
+document.onkeypress = function (e) 
+{
+   notAnimating();
+}; //end key press
+
+/* @brief Detect a mouse click and stop animation
+ */
+document.onclick = function (e) 
+{
+   //if click is not on a button, stop the animation
+   if(e.target.id != "button")
+   {
+     notAnimating();
+   }
+}; //end mouse click
+
+/* @brief Stop the animation
+ */
+function notAnimating()
+{
+   //clear animation variables
+   DIRECTION = 0;
+   SPEED = 0;
+   ROTATION = 0;
+    
+   //set animation state to not animating 
+   anim.stop();
+   animating = false;
+   document.getElementById("state").innerHTML="Not Animating";
+} //end notAnimating
