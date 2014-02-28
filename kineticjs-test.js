@@ -15,6 +15,10 @@ var NUM_HORIZ_GRIDS = HEIGHT_FT * FT_2_CELL; //number of horizontal grid-lines
 var VEHICLE_WIDTH = 2*FT_2_CELL*(WIDTH_PX/NUM_VERT_GRIDS); //width pixels
 var VEHICLE_HEIGHT = 4*FT_2_CELL*(WIDTH_PX/NUM_VERT_GRIDS); //height pixels
 var SECOND_MS = 1000; //number of milliseconds in a second
+var CENTER_X = WIDTH_PX /2; //center of canvas x
+var CENTER_Y = HEIGHT_PX/2; //center of canvas y
+var GLOBAL_X = CENTER_X; //global vehicle x coordinate
+var GLOBAL_Y = CENTER_Y; //global vehicle y coordinate
 
 //single stage that contains the grid and vehicle
 var stage = new Kinetic.Stage({
@@ -218,8 +222,6 @@ function goPressed(direction, speed, rotation)
  */
 function animate(direction, speed, rotation)
 {
-   console.log("speed: " + speed);
-   console.log("direction: " + direction);
 
    var anim = new Kinetic.Animation(function(frame) 
    {
@@ -229,20 +231,28 @@ function animate(direction, speed, rotation)
       
       //determine x component of speed value
       var speedX = feetToPixels(speed) * Math.cos(toRadians(direction));
-      var newX = (speedX * frame.timeDiff) / SECOND_MS;
+      var newX = rect.getPosition().x + (speedX * frame.timeDiff) / SECOND_MS;
       
       //determine y component of speed value
       var speedY = feetToPixels(speed) * Math.sin(toRadians(direction));
-      var newY = (speedY * frame.timeDiff) / SECOND_MS;
+      var newY = rect.getPosition().y + (speedY * frame.timeDiff) / SECOND_MS;
       
       //move the vehicle
-      rect.setX(rect.getPosition().x + newX);
-      rect.setY(rect.getPosition().y + newY);
+      rect.setX(newX - CENTER_X);
+      rect.setY(Math.abs(newY - CENTER_Y));
+      
+      //update global vehicle reference point
+      GLOBAL_X += pixelsToFeet(newX - CENTER_X);
+      GLOBAL_Y += pixelsToFeet(Math.abs(newY - CENTER_Y));
+      
+      //update the diagnostic coordinates text on the page
+      document.getElementById("x_coord").innerHTML=GLOBAL_X;
+      document.getElementById("y_coord").innerHTML=GLOBAL_Y;
 
       //TODO: this isn't actually deg/sec
       //rotate the vehicle
       rect.rotate(rotation/1000);
-      
+
       //check to see if view needs to be repositioned
       checkRepositionView()
 
@@ -255,14 +265,16 @@ function animate(direction, speed, rotation)
 //reposition viewable area when vehicle reference point travels within 3 feet of screen edge
 function checkRepositionView()
 { 
-   brx = rect.getPosition().x + feetToPixels(BUFFER);
-   bry = rect.getPosition().y;
-   blx = rect.getPosition().x - feetToPixels(BUFFER);
-   bly = rect.getPosition().y;
-   btx = rect.getPosition().x;
-   bty = rect.getPosition().y - feetToPixels(BUFFER);
-   bbx = rect.getPosition().x;
-   bby = rect.getPosition().y + feetToPixels(BUFFER);
+
+   brx = rect.getPosition().x + (Math.cos(rect.getRotation()) * feetToPixels(BUFFER));
+   bry = rect.getPosition().y + (Math.sin(rect.getRotation()) * feetToPixels(BUFFER));
+   blx = rect.getPosition().x - (Math.cos(rect.getRotation()) * feetToPixels(BUFFER));
+   bly = rect.getPosition().y - (Math.sin(rect.getRotation()) * feetToPixels(BUFFER));
+   
+   btx = rect.getPosition().x + (Math.sin(rect.getRotation()) * feetToPixels(BUFFER));
+   bty = rect.getPosition().y - (Math.cos(rect.getRotation()) * feetToPixels(BUFFER));
+   bbx = rect.getPosition().x - (Math.sin(rect.getRotation()) * feetToPixels(BUFFER));
+   bby = rect.getPosition().y + (Math.cos(rect.getRotation()) * feetToPixels(BUFFER));
    
    a.setX(brx);
    a.setY(bry);
@@ -278,9 +290,15 @@ function checkRepositionView()
       bly > BOUNDS_BOTTOM || bry > BOUNDS_BOTTOM || bty > BOUNDS_BOTTOM || bby > BOUNDS_BOTTOM ||
       bly < BOUNDS_TOP || bry < BOUNDS_TOP || bty < BOUNDS_TOP || bby < BOUNDS_TOP)
    {
-      console.log("outa");
+      repositionView();
    }
 } //end checkRepositionView
+
+function repositionView()
+{
+   rect.setX(CENTER_X);
+   rect.setY(CENTER_Y);
+}
 
 /* @brief Helper function to convert an angel in degrees to radians
  * @param angle The angle to be converted to radians
@@ -298,6 +316,15 @@ function feetToPixels(feet)
 {
    return feet * (WIDTH_PX/WIDTH_FT);
 } //end feetToPixels
+
+/* @brief Helper function to convert pixels to feet
+ * @param pixels The number of pixels
+ * @return Number of pixels in feet
+ */
+function pixelsToFeet(pixels)
+{
+   return pixels / (WIDTH_PX/WIDTH_FT);
+} //end pixelsToFeet
 
 /* @brief Reload the page
  */
