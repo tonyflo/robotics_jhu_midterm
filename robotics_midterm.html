@@ -33,15 +33,18 @@
          <button onclick="pointExecution(true)">Go</button>
       </div>
       <div>
-         <h3>Info</h3>
+         <h3>Animation Information</h3>
          <table border="1">
             <tr><td>State:</td><td id="state" colspan="2">Not Animating</td></tr>
-            <tr><td>X:</td><td id="x_coord">0</td><td>ft</td></tr>
-            <tr><td>Y:</td><td id="y_coord">0</td><td>ft</td></tr>
-            <tr><td>Speed:</td><td id="cur_speed">0</td><td>ft/sec</td></tr>
-            <tr><td>Time:</td><td id="cur_time">0</td><td>sec</td></tr>
+            <tr><td>Time:</td><td id="cur_time">0.00</td><td>sec</td></tr>
+         </table>
+         <h3>Vehicle Information</h3>
+         <table border="1">
+            <tr><td>X:</td><td id="x_coord">0.00</td><td>ft</td></tr>
+            <tr><td>Y:</td><td id="y_coord">0.00</td><td>ft</td></tr>
+            <tr><td>Speed:</td><td id="cur_speed">0.00</td><td>ft/sec</td></tr>
             <!--<tr><td>Direction:</td><td id="cur_dir">0</td><td>deg</td></tr>-->
-            <tr><td>Rotation:</td><td id="cur_rot">0</td><td>deg</td></tr>
+            <tr><td>Rotation:</td><td id="cur_rot">0.00</td><td>deg</td></tr>
          </table>
          <button onclick="reload()">Reload Page</button>
       </div>
