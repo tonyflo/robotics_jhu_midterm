@@ -504,9 +504,9 @@ function animate()
    DIRECTION -= 90;
    
    //set state of animation to animating
-   animating = true;
+   animating = "vref";
    anim.start();
-   document.getElementById("state").innerHTML="Animating";
+   document.getElementById("state").innerHTML="Animating Vehicle Reference Point";
    document.getElementById("cur_speed").innerHTML=(SPEED).toFixed(NUM_DEC_PLACES);
    //document.getElementById("cur_dir").innerHTML=toDegrees(DIRECTION).toFixed(NUM_DEC_PLACES);
 } //end animate
@@ -604,7 +604,7 @@ function animatePointExecution()
    {
       animating = true;
       animPointExecution.start();
-      document.getElementById("state").innerHTML="Animating";
+      document.getElementById("state").innerHTML="Animating Point Execution";
       document.getElementById("cur_speed").innerHTML=(SPEED).toFixed(NUM_DEC_PLACES);
       //document.getElementById("cur_dir").innerHTML=toDegrees(DIRECTION).toFixed(NUM_DEC_PLACES);
    }
@@ -819,7 +819,10 @@ drawVehicle();
  */
 document.onkeypress = function (e) 
 {
-   notAnimating();
+   if(animating == "vref")
+   {
+      notAnimating();
+   }
 }; //end key press
 
 /* @brief Detect a mouse click and stop animation
@@ -827,7 +830,7 @@ document.onkeypress = function (e)
 document.onclick = function (e) 
 {
    //if click is not on a button, stop the animation
-   if(e.target.id != "button")
+   if(e.target.id != "button" && animating == "vref")
    {
      notAnimating();
    }
