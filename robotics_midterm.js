@@ -19,12 +19,20 @@ var SPEED = 0;
 var DIRECTION = 0;
 var ROTATION = 0;
 var TIME = 0;
+var X = 0;
+var Y = 0;
+var ORIENTATION = 0;
 
 //tracking variables
 var GLOBAL_X = 0; //global vehicle x coordinate
 var GLOBAL_Y = 0; //global vehicle y coordinate
 var CANVAS_X = 0; //canvas vehicle x coordinate
 var CANVAS_Y = 0; //canvas vehicle y coordinate
+
+//waypoint variables
+var waypointCols = ["pointX", "pointY", "time", "orientation"];
+var waypoints = [];
+var cur_waypoint = 0;
 
 //requirements
 var MAX_SPEED = 15; //ft per second
@@ -234,6 +242,13 @@ var animPointExecution = new Kinetic.Animation(function(frame)
       animating = false;
       document.getElementById("state").innerHTML="Finished";
       frame.time = 0;
+      
+      //execute another waypoint if need be
+      cur_waypoint++;
+      if(cur_waypoint < waypoints.length)
+      {
+         pointExecution(true);
+      }
    }
 }, vehicleLayer); //end animPointExecution 
 
@@ -243,32 +258,13 @@ var resetAnim = new Kinetic.Animation(function(frame)
    rect.setX(CENTER_X);
    rect.setY(CENTER_Y);
    rect.rotation(0);
-}, vehicleLayer); //end animPointExecution
+}, vehicleLayer); //end resetAnim
 
 /****************************
  *
  * Functions
  *
  ****************************/
- 
-function loadImage(sources, callback) {
-  var images = {};
-  var loadedImages = 0;
-  var numImages = 0;
-  // get num of sources
-  for(var src in sources) {
-    numImages++;
-  }
-  for(var src in sources) {
-    images[src] = new Image();
-    images[src].onload = function() {
-      if(++loadedImages >= numImages) {
-        callback(images);
-      }
-    };
-    images[src].src = sources[src];
-  }
-} //end loadImage
  
  /* @brief Draws the grid-lines on the canvas
   */
@@ -339,25 +335,75 @@ function goPressed(direction, speed, rotation)
 
 /* @brief Action taken when the Go button is pressed for point 
  * execution
- * @param x The destination x coordinate
- * @param y The destination y coordinate
- * @param time the value that the user entered for time
- * @param orientation The orientation that the vehicle will be at the 
+ */
+function pointExecution(waypointMode)
+{
+   if(waypointMode == true)
+   {
+      //animate
+      animatePointExecution(waypoints[cur_waypoint][0], waypoints[cur_waypoint][1], waypoints[cur_waypoint][2], waypoints[cur_waypoint][3]);
+   }
+   else
+   {
+      //add valid waypoint
+      validateWaypoint();
+      
+      //animate
+      animatePointExecution(waypoints[cur_waypoint][0], waypoints[cur_waypoint][1], waypoints[cur_waypoint][2], waypoints[cur_waypoint][3]);
+   }
+} //end pointExecution
+
+/* @brief Validate waypoint
  * destination
  */
-function pointExecution(x, y, time, orientation)
+function validateWaypoint()
 {
-   reset();
+   X = document.getElementById('pointX').value,
+   Y = document.getElementById('pointY').value;
+   TIME = document.getElementById('time').value;
+   ORIENTATION = document.getElementById('orientation').value;
    
-   if(validateUserInputPointExecution(x, y, time, orientation) == true)
+   if(validateUserInputPointExecution() == true)
    {
-      animatePointExecution();
+      addWaypoint();
+      return true;
    }
    else
    {
       document.getElementById("state").innerHTML="Invalid Input";
+      return false;
    }
-} //end pointExecution
+} //end validateWaypoint
+
+/* @brief Add waypoint
+ */
+function addWaypoint()
+{
+   //get the waypoint table element
+   var table = document.getElementById("waypoints");
+
+   //create an empty <tr> element and add it to the 1st position of the table:
+   //plus one to start after table header row
+   var row = table.insertRow(waypoints.length + 1);
+
+   //array to hold waypoint
+   var waypoint = [];
+   
+   //add the waypoint
+   for(var i = 0; i < waypointCols.length; i++)
+   {
+      var cell = row.insertCell(i);
+      //get the data from the validated form
+      var data = parseInt(document.getElementById(waypointCols[i]).value);
+      cell.innerHTML = data;
+      waypoint.push(data);
+   }
+   
+   //add the waypoint to the array of waypoints
+   waypoints.push(waypoint);
+   
+   console.log(waypoint);
+} //end addWaypoint
 
 /* @brief Validate user input
  * @param direction The value that the user entered for direction
@@ -428,62 +474,62 @@ function pointExecution(x, y, time, orientation)
  * @param orientation The orientation that the vehicle will be at the 
  * destination
  */
- function validateUserInputPointExecution(x, y, time, orientation)
+ function validateUserInputPointExecution()
  {
    var status = new Boolean(1);
    
    //check for numeric input
-   if(isNaN(x))
+   if(isNaN(X))
    {
       alert("Please enter a valid value for x");
       status = false;
    }
-   if(isNaN(y))
+   if(isNaN(Y))
    {
       alert("Please enter a valid value for y");
       status = false;
    }
-   if(isNaN(time))
+   if(isNaN(TIME))
    {
       alert("Please enter a valid value for time");
       status = false;
    }
-   if(isNaN(orientation))
+   if(isNaN(ORIENTATION))
    {
       alert("Please enter a valid value for orientation");
       status = false;
    }
    
    //check negatives
-   if(time <= 0)
+   if(TIME <= 0)
    {
       alert("Time must be positive");
       status = false;
    }
    
    //set defaults
-   if(!x)
+   if(!X)
    {
-      x = 0;
+      X = 0;
    }
-   if(!y)
+   if(!Y)
    {
-      y = 0;
+      Y = 0;
    }
-   if(!time)
+   if(!TIME)
    {
-      time = 0;
+      TIME = 0;
    }
-   if(!orientation)
+   if(!ORIENTATION)
    {
-      orientation = 0;
+      ORIENTATION = 0;
    }
    
    //fill in input
-   document.getElementById("pointX").value=x;
-   document.getElementById("pointY").value=y;
-   document.getElementById("time").value=time;
-   document.getElementById("orientation").value=orientation;
+   document.getElementById("pointX").value=X;
+   document.getElementById("pointY").value=Y;
+   document.getElementById("time").value=TIME;
+   document.getElementById("orientation").value=ORIENTATION;
    
    return status;
  } //end validateUserInputPointExecution
@@ -518,18 +564,18 @@ function animate()
  * @param orientation The orientation that the vehicle will be at the 
  * destination
  */
-function animatePointExecution()
+function animatePointExecution(x, y, time, orientation)
 {
-   //get validated values from form
-   x = parseInt(document.getElementById("pointX").value);
-   y = parseInt(document.getElementById("pointY").value);
-   time = parseInt(document.getElementById("time").value);
-   orientation = parseInt(document.getElementById("orientation").value);
-
    //determine the direction to the end point
-   deltaX = (rect.getPosition().x + feetToPixels(x)) - rect.getPosition().x;
-   deltaY = (rect.getPosition().y + feetToPixels(y)) - rect.getPosition().y;
-   
+   var whereAmI_x = rect.getPosition().x;
+   var whereAmI_y = rect.getPosition().y;
+
+   var whereAmIGoing_x = CENTER_X + feetToPixels(x);
+   var whereAmIGoing_y = CENTER_Y - feetToPixels(y);
+
+   deltaX = whereAmIGoing_x - whereAmI_x;
+   deltaY = whereAmIGoing_y - whereAmI_y;
+
    //determine how the sign of x and y will change
    setSign(deltaX, deltaY);
 
@@ -625,39 +671,41 @@ function speedLimit()
 /* @brief Determine what value to give the x and y multipliers. These
  * multipliers will be used to increase or decrease the x and y 
  * coordinates of the vehicle during animation.
+ * @note The delta values are in pixels where y increases down and x
+ * increases right.
  * @param deltaX The requested change in x
  * @param deltaY The requested change in y
  */
 function setSign(deltaX, deltay)
 {
-   //1st quadrant
+   //4th quadrant
    if(deltaY > 0 && deltaX > 0)
    {
       X_MULT = 1;
-      Y_MULT = -1;
-   }
-   //2nd quadrant
-   else if(deltaY > 0 && deltaX < 0)
-   {
-      X_MULT = -1;
       Y_MULT = 1;
    }
    //3rd quadrant
+   else if(deltaY > 0 && deltaX < 0)
+   {
+      X_MULT = -1;
+      Y_MULT = -1;
+   }
+   //2nd quadrant
    else if(deltaY < 0 && deltaX < 0)
    {
       X_MULT = -1;
-      Y_MULT = 1;
+      Y_MULT = -1;
    }
-   //4th quadrant
+   //1st quadrant
    else if(deltaY < 0 && deltaX > 0)
    {
       X_MULT = 1;
-      Y_MULT = -1;
+      Y_MULT = 1;
    }
    else
    {
       X_MULT = 1;
-      Y_MULT = 1;
+      Y_MULT = -1;
       
       if(deltaX < 0)
       {
@@ -767,6 +815,15 @@ function reset()
    GLOBAL_Y = 0;
    CANVAS_X = 0;
    CANVAS_Y = 0;
+   
+   //delete waypoint rows
+   for(var i = 0; i < waypoints.length; i++)
+   {
+      //delete the first row
+      document.getElementById("waypoints").deleteRow(1);
+   }
+   waypoints = [];
+   cur_waypoint = 0;
    
    //reposition vehicle
    resetAnim.start();

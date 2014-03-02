@@ -23,8 +23,14 @@
          Y Coordinate:<input type="text" name="pointY" id="pointY"><br>
          Time (sec):<input type="text" name="time" id="time"><br>
          End Orientation (deg):<input type="text" name="orientation" id="orientation"><br>
-         <button id="button" onclick="pointExecution(document.getElementById('pointX').value, document.getElementById('pointY').value, document.getElementById('time').value, document.getElementById('orientation').value)">Go</button>
-         <button onclick="reset()">Reset</button>
+         <button id="button" onclick="pointExecution(false)">Go</button>
+         <button onclick="validateWaypoint()">Add</button>
+         <button onclick="reset()">Reset</button><br><br>
+         <caption>Waypoints</caption>
+         <table id="waypoints" border="1">
+         <tr><th>X</th><th>Y</th><th>Time</th><th>Orientation</th></tr>
+         </table>
+         <button onclick="pointExecution(true)">Go</button>
       </div>
       <div>
          <h3>Info</h3>
