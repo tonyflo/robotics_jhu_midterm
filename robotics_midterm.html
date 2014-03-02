@@ -18,21 +18,32 @@
   </head>
   <body id="container">
    <div STYLE="position:absolute; left:550px;" >
-      <h3>Control The Vehicle</h3>
-      Direction: (deg)<input type="text" name="direction" id="direction"><br>
-      Speed: (ft/sec)<input type="text" name="speed" id="speed"><br>
-      Rate of Rotation: (deg/sec)<input type="text" name="rotation" id="rotation"><br>
-      <button id="button" onclick="goPressed(document.getElementById('direction').value, document.getElementById('speed').value, document.getElementById('rotation').value)">Go</button>
-      <button onclick="reset()">Reset</button>
-   </div>
-   <div STYLE="position:absolute; left:550px; bottom:200px" >
-      <h3>Info</h3>
-      <table border="1">
-         <tr><td>State:</td><td id="state" colspan="2">Not Animating</td></tr>
-         <tr><td>X:</td><td id="x_coord">0</td><td>ft</td></tr>
-         <tr><td>Y:</td><td id="y_coord">0</td><td>ft</td></tr>
-         <tr><td>Rotation:</td><td id="cur_rot">0</td><td>deg</td></tr>
-      </table>
+      <div>
+         <h3>Vehicle Reference Point</h3>
+         Direction (deg):<input type="text" name="direction" id="direction"><br>
+         Speed (ft/sec):<input type="text" name="speed" id="speed"><br>
+         Rate of Rotation (deg/sec):<input type="text" name="rotation" id="rotation"><br>
+         <button id="button" onclick="goPressed(document.getElementById('direction').value, document.getElementById('speed').value, document.getElementById('rotation').value)">Go</button>
+         <button onclick="reset()">Reset</button>
+      </div>
+      <div>
+         <h3>Point Execution</h3>
+         X Coordinate:<input type="text" name="pointX" id="pointX"><br>
+         Y Coordinate:<input type="text" name="pointY" id="pointY"><br>
+         Speed (ft/sec):<input type="text" name="pointSpeed" id="pointSpeed"><br>
+         End Orientation (deg):<input type="text" name="orientation" id="orientation"><br>
+         <button id="button" onclick="pointExecution(document.getElementById('pointX').value, document.getElementById('pointY').value, document.getElementById('pointSpeed').value, document.getElementById('orientation').value)">Go</button>
+         <button onclick="reset()">Reset</button>
+      </div>
+      <div>
+         <h3>Info</h3>
+         <table border="1">
+            <tr><td>State:</td><td id="state" colspan="2">Not Animating</td></tr>
+            <tr><td>X:</td><td id="x_coord">0</td><td>ft</td></tr>
+            <tr><td>Y:</td><td id="y_coord">0</td><td>ft</td></tr>
+            <tr><td>Rotation:</td><td id="cur_rot">0</td><td>deg</td></tr>
+         </table>
+      </div>
    </div>
   </body>
 </html>

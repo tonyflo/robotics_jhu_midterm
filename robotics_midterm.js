@@ -18,6 +18,9 @@
 var SPEED = 0;
 var DIRECTION = 0;
 var ROTATION = 0;
+
+//time variables
+var TIME = 0;
  
 //canvas variables
 var WIDTH_PX = 500; //width of canvas
@@ -136,8 +139,8 @@ if(DEBUG)
  *
  ****************************/
  
- /* @brief The main animation object that moves the vehicle 
-  */
+/* @brief The main animation object that moves the vehicle reference point
+ */
 var anim = new Kinetic.Animation(function(frame) 
 {
    //var time = frame.time,
@@ -172,9 +175,53 @@ var anim = new Kinetic.Animation(function(frame)
    document.getElementById("cur_rot").innerHTML=(rect.getRotationDeg() % DEGREES_IN_CIRCLE).toFixed(NUM_DEC_PLACES);
 
    //check to see if view needs to be repositioned
-   checkRepositionView()
+   checkRepositionView();
 
 }, vehicleLayer); //end anim 
+
+/* @brief The main animation object for point execution
+ */
+var animPointExecution = new Kinetic.Animation(function(frame) 
+{
+   //determine x component of speed value
+   var speedX = feetToPixels(SPEED) * Math.cos(DIRECTION);
+   var newX = rect.getPosition().x + (speedX * frame.timeDiff) / SECOND_MS;
+   
+   //determine y component of speed value
+   var speedY = feetToPixels(SPEED) * Math.sin(DIRECTION);
+   var newY = rect.getPosition().y + (speedY * frame.timeDiff) / SECOND_MS;
+   
+   //move the vehicle
+   rect.setX(newX);
+   rect.setY(newY);
+   
+   //update global vehicle coordinates
+   CANVAS_X = pixelsToFeet(newX - CENTER_X);
+   CANVAS_Y = pixelsToFeet(Math.abs(newY - CENTER_Y))
+   
+   //update the diagnostic coordinates text on the page
+   document.getElementById("x_coord").innerHTML=(GLOBAL_X + CANVAS_X).toFixed(NUM_DEC_PLACES);
+   document.getElementById("y_coord").innerHTML=(GLOBAL_Y + CANVAS_Y).toFixed(NUM_DEC_PLACES);
+
+   //TODO: this isn't actually deg/sec
+   //rotate the vehicle
+   //rect.rotate(ROTATION/1000);
+   
+   //update the diagnostic vehicle rotation
+   //document.getElementById("cur_rot").innerHTML=(rect.getRotationDeg() % DEGREES_IN_CIRCLE).toFixed(NUM_DEC_PLACES);
+
+   //check to see if view needs to be repositioned
+   checkRepositionView();
+   
+   //check to see if the vehicle has reached it's destination
+   if(frame.time > TIME)
+   {
+      animPointExecution.stop();
+      animating = false;
+      document.getElementById("state").innerHTML="Finished";
+      frame.time = 0;
+   }
+}, vehicleLayer); //end animPointExecution 
 
 /****************************
  *
@@ -229,7 +276,7 @@ function drawVehicle()
    stage.add(vehicleLayer);
 } //end drawVehicle
 
-/* @brief Action taken when the Go button is pressed
+/* @brief Action taken when the Go button is pressed for vehicle reference point
  * @param direction The value that the user entered for direction
  * @param speed The value that the user entered for speed
  * @param rotation the value that the user entered for rotation
@@ -243,6 +290,20 @@ function goPressed(direction, speed, rotation)
       animate(direction, speed, rotation);
    }
 } //end goPressed
+
+/* @brief Action taken when the Go button is pressed for point execution
+ * @param x The destination x coordinate
+ * @param y The destination y coordinate
+ * @param speed the value that the user entered for speed
+ * @param orientation The orientation that the vehicle will be at the destination
+ */
+function pointExecution(x, y, speed, orientation)
+{
+   if(validateUserInputPointExecution(x, y, speed, orientation) == true)
+   {
+      animatePointExecution(x, y, speed, orientation);
+   }
+} //end pointExecution
 
 /* @brief Validate user input
  * @param direction The value that the user entered for direction
@@ -278,6 +339,39 @@ function goPressed(direction, speed, rotation)
    return true;
  } //end validateUserInput
 
+/* @brief Validate user input
+ * @param x The destination x coordinate
+ * @param y The destination y coordinate
+ * @param speed the value that the user entered for speed
+ * @param orientation The orientation that the vehicle will be at the destination
+ */
+ function validateUserInputPointExecution(x, y, speed, orientation)
+ {
+   //check for numeric input
+   if(isNaN(x))
+   {
+      alert("Please enter a valid value for x");
+      return false;
+   }
+   if(isNaN(y))
+   {
+      alert("Please enter a valid value for y");
+      return false;
+   }
+   if(isNaN(speed))
+   {
+      alert("Please enter a valid value for speed");
+      return false;
+   }
+   if(isNaN(orientation))
+   {
+      alert("Please enter a valid value for orientation");
+      return false;
+   }
+   
+   return true;
+ } //end validateUserInputPointExecution
+ 
 /* @brief Loop that animates the vehicle given parameters
  * @param direction The value that the user entered for direction
  * @param speed The value that the user entered for speed
@@ -295,6 +389,29 @@ function animate(direction, speed, rotation)
    anim.start();
    document.getElementById("state").innerHTML="Animating";
 } //end animate
+
+function animatePointExecution(x, y, speed, orientation)
+{
+   //determine the direction to the end point
+   deltaX = rect.getPosition().x - (rect.getPosition().x + feetToPixels(x));
+   deltaY = rect.getPosition().y - (rect.getPosition().y + feetToPixels(y));
+
+   //set animation variables
+   DIRECTION = Math.atan(deltaY/deltaX);
+   SPEED = speed;
+
+   //calculate the distance the vehicle must travel
+   var distance = pixelsToFeet(deltaX / Math.sin(DIRECTION));
+
+   //calculate the drive time in ms to destination
+   TIME = Math.abs((distance / SPEED) * SECOND_MS);
+   console.log(TIME);
+
+   animating = true;
+   animPointExecution.start();
+   document.getElementById("state").innerHTML="Animating";
+
+} //end animatePointexecution
 
 //reposition viewable area when vehicle reference point travels within 3 feet of screen edge
 function checkRepositionView()
@@ -368,6 +485,14 @@ function pixelsToFeet(pixels)
    return pixels / (WIDTH_PX/WIDTH_FT);
 } //end pixelsToFeet
 
+function pixelToCoordinate(x, y)
+{
+   var offsetX = x - CENTER_X;
+   var offsetY = y - CENTER_Y;
+   
+   return [offsetX, offsetY];
+} //end pixelToCoordinate
+
 /* @brief Reload the page
  */
 function reset()
@@ -418,6 +543,7 @@ function notAnimating()
     
    //set animation state to not animating 
    anim.stop();
+   animPointExecution.stop();
    animating = false;
    document.getElementById("state").innerHTML="Not Animating";
 } //end notAnimating
