@@ -18,9 +18,16 @@
 var SPEED = 0;
 var DIRECTION = 0;
 var ROTATION = 0;
-
-//time variables
 var TIME = 0;
+
+//tracking variables
+var GLOBAL_X = 0; //global vehicle x coordinate
+var GLOBAL_Y = 0; //global vehicle y coordinate
+var CANVAS_X = 0; //canvas vehicle x coordinate
+var CANVAS_Y = 0; //canvas vehicle y coordinate
+
+//requirements
+var MAX_SPEED = 15; //ft per second
  
 //canvas variables
 var WIDTH_PX = 500; //width of canvas
@@ -35,10 +42,6 @@ var VEHICLE_HEIGHT = 4*FT_2_CELL*(WIDTH_PX/NUM_VERT_GRIDS); //height pixels
 var SECOND_MS = 1000; //number of milliseconds in a second
 var CENTER_X = WIDTH_PX /2; //center of canvas x
 var CENTER_Y = HEIGHT_PX/2; //center of canvas y
-var GLOBAL_X = 0; //global vehicle x coordinate
-var GLOBAL_Y = 0; //global vehicle y coordinate
-var CANVAS_X = 0; //canvas vehicle x coordinate
-var CANVAS_Y = 0; //canvas vehicle y coordinate
 var DEG_IN_CIRCLE = 360; //degrees in a circle
 var NUM_DEC_PLACES = 2; //number of decimals places to show
 var X_MULT = 1; //used to determine which quadrant
@@ -60,9 +63,6 @@ var rect = new Kinetic.Rect({
   y: HEIGHT_PX/2 - VEHICLE_HEIGHT/2,
   width: VEHICLE_WIDTH,
   height: VEHICLE_HEIGHT,
-  fill: 'green',
-  stroke: 'black',
-  strokeWidth: 4,
   offset: {x:VEHICLE_WIDTH/2, y:VEHICLE_HEIGHT/2} //set center as vehicle reference
 }); //end rect
 
@@ -149,6 +149,9 @@ var anim = new Kinetic.Animation(function(frame)
    //timeDiff = frame.timeDiff,
    //frameRate = frame.frameRate;
    
+   //update time
+   document.getElementById("cur_time").innerHTML=(frame.time/SECOND_MS).toFixed(NUM_DEC_PLACES);
+   
    //determine x component of speed value
    var speedX = feetToPixels(SPEED) * Math.cos(toRadians(DIRECTION));
    var newX = rect.getPosition().x + (speedX * frame.timeDiff) / SECOND_MS;
@@ -188,6 +191,9 @@ var anim = new Kinetic.Animation(function(frame)
  */
 var animPointExecution = new Kinetic.Animation(function(frame) 
 {
+   //update time
+   document.getElementById("cur_time").innerHTML=(frame.time/SECOND_MS).toFixed(NUM_DEC_PLACES);
+   
    //determine x component of speed value
    var speedX = feetToPixels(SPEED) * Math.cos(DIRECTION);
    var newX = rect.getPosition().x + (X_MULT * ((speedX * frame.timeDiff) / SECOND_MS));
@@ -211,7 +217,7 @@ var animPointExecution = new Kinetic.Animation(function(frame)
    //rotate the vehicle
    if(ROTATION != 0)
    {
-      var angleDiff = frame.timeDiff * ROTATION / SECOND_MS;  
+      var angleDiff = frame.timeDiff * ROTATION / SECOND_MS;     
       rect.rotate(angleDiff);
    }
    
@@ -222,7 +228,7 @@ var animPointExecution = new Kinetic.Animation(function(frame)
    checkRepositionView();
    
    //check to see if the vehicle has reached it's destination
-   if(frame.time > TIME)
+   if(frame.time > (TIME * SECOND_MS))
    {
       animPointExecution.stop();
       animating = false;
@@ -231,11 +237,38 @@ var animPointExecution = new Kinetic.Animation(function(frame)
    }
 }, vehicleLayer); //end animPointExecution 
 
+
+var resetAnim = new Kinetic.Animation(function(frame)
+{
+   rect.setX(CENTER_X);
+   rect.setY(CENTER_Y);
+   rect.rotation(0);
+}, vehicleLayer); //end animPointExecution
+
 /****************************
  *
  * Functions
  *
  ****************************/
+ 
+function loadImage(sources, callback) {
+  var images = {};
+  var loadedImages = 0;
+  var numImages = 0;
+  // get num of sources
+  for(var src in sources) {
+    numImages++;
+  }
+  for(var src in sources) {
+    images[src] = new Image();
+    images[src].onload = function() {
+      if(++loadedImages >= numImages) {
+        callback(images);
+      }
+    };
+    images[src].src = sources[src];
+  }
+} //end loadImage
  
  /* @brief Draws the grid-lines on the canvas
   */
@@ -292,12 +325,15 @@ function drawVehicle()
  */
 function goPressed(direction, speed, rotation)
 {
+   reset();
+   
    if(validateUserInput(direction, speed, rotation) == true)
    {
-      //adjust angles so that vehicle and global coordinate systems initially
-      //line up
-      direction -= 90;
-      animate(direction, speed, rotation);
+      animate();
+   }
+   else
+   {
+      document.getElementById("state").innerHTML="Invalid Input";
    }
 } //end goPressed
 
@@ -305,15 +341,21 @@ function goPressed(direction, speed, rotation)
  * execution
  * @param x The destination x coordinate
  * @param y The destination y coordinate
- * @param speed the value that the user entered for speed
+ * @param time the value that the user entered for time
  * @param orientation The orientation that the vehicle will be at the 
  * destination
  */
-function pointExecution(x, y, speed, orientation)
+function pointExecution(x, y, time, orientation)
 {
-   if(validateUserInputPointExecution(x, y, speed, orientation) == true)
+   reset();
+   
+   if(validateUserInputPointExecution(x, y, time, orientation) == true)
    {
-      animatePointExecution(x, y, speed, orientation);
+      animatePointExecution();
+   }
+   else
+   {
+      document.getElementById("state").innerHTML="Invalid Input";
    }
 } //end pointExecution
 
@@ -324,28 +366,37 @@ function pointExecution(x, y, speed, orientation)
  */
  function validateUserInput(direction, speed, rotation)
  {
+   var status = new Boolean(1);
+   
    //check for numeric input
    if(isNaN(direction))
    {
       alert("Please enter a valid value for direction");
-      return false;
+      status = false;
    }
    if(isNaN(speed))
    {
       alert("Please enter a valid value for speed");
-      return false;
+      status = false;
    }
    if(isNaN(rotation))
    {
       alert("Please enter a valid value for rotation");
-      return false;
+      status = false;
    }
 
    //max speed is 15
-   if(speed > 15)
+   if(speed > MAX_SPEED)
    {
       alert("Max value for speed is 15");
-      return false;
+      status = false;
+   }
+   
+   //check negatives
+   if(speed < 0)
+   {
+      alert("Speed cannot be negative");
+      status = false;
    }
    
    //set defaults
@@ -362,38 +413,52 @@ function pointExecution(x, y, speed, orientation)
       rotation = 0;
    }
    
-   return true;
+   //fill in input
+   document.getElementById("direction").value=direction;
+   document.getElementById("speed").value=speed;
+   document.getElementById("rotation").value=rotation;
+   
+   return status;
  } //end validateUserInput
 
 /* @brief Validate user input
  * @param x The destination x coordinate
  * @param y The destination y coordinate
- * @param speed the value that the user entered for speed
+ * @param time The value that the user entered for time
  * @param orientation The orientation that the vehicle will be at the 
  * destination
  */
- function validateUserInputPointExecution(x, y, speed, orientation)
+ function validateUserInputPointExecution(x, y, time, orientation)
  {
+   var status = new Boolean(1);
+   
    //check for numeric input
    if(isNaN(x))
    {
       alert("Please enter a valid value for x");
-      return false;
+      status = false;
    }
    if(isNaN(y))
    {
       alert("Please enter a valid value for y");
-      return false;
+      status = false;
    }
-   if(isNaN(speed))
+   if(isNaN(time))
    {
-      alert("Please enter a valid value for speed");
-      return false;
+      alert("Please enter a valid value for time");
+      status = false;
    }
    if(isNaN(orientation))
    {
       alert("Please enter a valid value for orientation");
-      return false;
+      status = false;
+   }
+   
+   //check negatives
+   if(time <= 0)
+   {
+      alert("Time must be positive");
+      status = false;
    }
    
    //set defaults
@@ -405,16 +470,22 @@ function pointExecution(x, y, speed, orientation)
    {
       y = 0;
    }
-   if(!speed)
+   if(!time)
    {
-      speed = 0;
+      time = 0;
    }
    if(!orientation)
    {
       orientation = 0;
    }
    
-   return true;
+   //fill in input
+   document.getElementById("pointX").value=x;
+   document.getElementById("pointY").value=y;
+   document.getElementById("time").value=time;
+   document.getElementById("orientation").value=orientation;
+   
+   return status;
  } //end validateUserInputPointExecution
  
 /* @brief Loop that animates the vehicle given parameters
@@ -422,21 +493,39 @@ function pointExecution(x, y, speed, orientation)
  * @param speed The value that the user entered for speed
  * @param rotation the value that the user entered for rotation
  */
-function animate(direction, speed, rotation)
+function animate()
 {
-   //set animation variables
-   DIRECTION = direction;
-   SPEED = speed;
-   ROTATION = rotation;
+   //get validated values from form
+   DIRECTION = parseInt(document.getElementById("direction").value);
+   SPEED = parseInt(document.getElementById("speed").value);
+   ROTATION = parseInt(document.getElementById("rotation").value);
+   
+   //adjust angles so that vehicle and global coordinate systems line up
+   DIRECTION -= 90;
    
    //set state of animation to animating
    animating = true;
    anim.start();
    document.getElementById("state").innerHTML="Animating";
+   document.getElementById("cur_speed").innerHTML=(SPEED).toFixed(NUM_DEC_PLACES);
+   //document.getElementById("cur_dir").innerHTML=toDegrees(DIRECTION).toFixed(NUM_DEC_PLACES);
 } //end animate
 
-function animatePointExecution(x, y, speed, orientation)
+/* @brief Loop that animates the vehicle given point execution parameters
+ * @param x The destination x coordinate
+ * @param y The destination y coordinate
+ * @param time The value that the user entered for time
+ * @param orientation The orientation that the vehicle will be at the 
+ * destination
+ */
+function animatePointExecution()
 {
+   //get validated values from form
+   x = parseInt(document.getElementById("pointX").value);
+   y = parseInt(document.getElementById("pointY").value);
+   time = parseInt(document.getElementById("time").value);
+   orientation = parseInt(document.getElementById("orientation").value);
+
    //determine the direction to the end point
    deltaX = (rect.getPosition().x + feetToPixels(x)) - rect.getPosition().x;
    deltaY = (rect.getPosition().y + feetToPixels(y)) - rect.getPosition().y;
@@ -444,8 +533,8 @@ function animatePointExecution(x, y, speed, orientation)
    //determine how the sign of x and y will change
    setSign(deltaX, deltaY);
 
-   //set animation variable for speed
-   SPEED = speed;
+   //set animation variable for time
+   TIME = parseInt(time);
    
    //avoid divide by zero!
    var distance = 0;
@@ -481,28 +570,57 @@ function animatePointExecution(x, y, speed, orientation)
       }
    }
 
-   //calculate the drive time in ms to destination
-   TIME = Math.abs((distance / SPEED) * SECOND_MS);
-   console.log(deltaX + " " + deltaY);
-   console.log("distance: " + distance);
-   console.log("DIRECTION: " + DIRECTION);
-   console.log("TIME: " + TIME);
+   //calculate the drive speed in ft/sec to destination
+   if(TIME != 0)
+   {
+      SPEED = Math.abs(distance / TIME);
+   }
+   else
+   {
+      SPEED = 0;
+   }
+   
+   //Debug
+   if(DEBUG == true)
+   {
+      console.log(deltaX + " " + deltaY);
+      console.log("distance: " + distance);
+      console.log("DIRECTION: " + DIRECTION);
+      console.log("TIME: " + TIME);
+      console.log("SPEED: " + SPEED);
+   }
    
    //determine rotation rate
    if(orientation != 0)
    {
-      ROTATION = orientation / (TIME / SECOND_MS);
+      ROTATION = orientation / TIME;
    }
    else
    {
       ROTATION = 0;
    }
    
-   animating = true;
-   animPointExecution.start();
-   document.getElementById("state").innerHTML="Animating";
-
+   if(speedLimit() == true)
+   {
+      animating = true;
+      animPointExecution.start();
+      document.getElementById("state").innerHTML="Animating";
+      document.getElementById("cur_speed").innerHTML=(SPEED).toFixed(NUM_DEC_PLACES);
+      //document.getElementById("cur_dir").innerHTML=toDegrees(DIRECTION).toFixed(NUM_DEC_PLACES);
+   }
 } //end animatePointexecution
+
+function speedLimit()
+{
+   if(SPEED > MAX_SPEED)
+   {
+      alert("The vehicle would have to travel at " + SPEED.toFixed(NUM_DEC_PLACES) + " ft/sec in order to get to the end point in " + TIME + " seconds. Unfortunately, the max speed of the vehicle is " + MAX_SPEED.toFixed(NUM_DEC_PLACES) + " ft/sec. Try again.");
+      document.getElementById("state").innerHTML="Invalid Input";      
+      return false;
+   }
+   
+   return true;
+}
 
 /* @brief Determine what value to give the x and y multipliers. These
  * multipliers will be used to increase or decrease the x and y 
@@ -629,19 +747,49 @@ function pixelsToFeet(pixels)
    return pixels / (WIDTH_PX/WIDTH_FT);
 } //end pixelsToFeet
 
-function pixelToCoordinate(x, y)
-{
-   var offsetX = x - CENTER_X;
-   var offsetY = y - CENTER_Y;
-   
-   return [offsetX, offsetY];
-} //end pixelToCoordinate
-
 /* @brief Reload the page
+ */
+function reload()
+{
+   location.reload();
+} //end reload
+
+/* @brief Resets the page
  */
 function reset()
 {
-   location.reload();
+   //reset variables
+   SPEED = 0;
+   DIRECTION = 0;
+   ROTATION = 0;
+   TIME = 0;
+   GLOBAL_X = 0;
+   GLOBAL_Y = 0;
+   CANVAS_X = 0;
+   CANVAS_Y = 0;
+   
+   //reposition vehicle
+   resetAnim.start();
+   resetAnim.stop();
+   
+   //clear input
+   document.getElementById("direction").value="";
+   document.getElementById("speed").value="";
+   document.getElementById("rotation").value="";
+   document.getElementById("pointX").value="";
+   document.getElementById("pointY").value="";
+   document.getElementById("time").value="";
+   document.getElementById("orientation").value="";
+   
+   //clear info
+   document.getElementById("x_coord").innerHTML=0;
+   document.getElementById("y_coord").innerHTML=0;
+   document.getElementById("cur_speed").innerHTML=SPEED;
+   document.getElementById("cur_time").innerHTML=TIME;
+   document.getElementById("cur_rot").innerHTML=ROTATION;
+
+   //update state
+   document.getElementById("state").innerHTML="Not Animating";
 } //end reset
 
 /****************************
@@ -649,7 +797,16 @@ function reset()
  * Main
  *
  ****************************/
+//draw grid
 drawGridlines();
+
+//draw vehicle
+var imageObj = new Image();
+imageObj.src = "car.png";
+imageObj.onload = function() {
+    rect.setFillPatternImage(imageObj);
+    stage.draw();
+}
 drawVehicle();
 
 /****************************
@@ -684,7 +841,7 @@ function notAnimating()
    DIRECTION = 0;
    SPEED = 0;
    ROTATION = 0;
-    
+
    //set animation state to not animating 
    anim.stop();
    animPointExecution.stop();
