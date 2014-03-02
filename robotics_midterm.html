@@ -1,23 +1,14 @@
 <!doctype html>
 <html>
   <head>
-    <title>canvas test</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <style>
-      html, body {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-      }
-    </style>
-    <script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v4.4.2.min.js"></script>
-    <script src="robotics_midterm.js" defer="defer"></script>
+    <title>Robotics Midterm</title>
+    <style>html, body { margin: 0; padding: 0; }</style>
   </head>
-  <body id="container">
-   <div STYLE="position:absolute; left:550px;" >
+  <body>
+   <div id="container"></div>
+   <script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v5.0.1.min.js"></script>
+   <script src="robotics_midterm.js" defer="defer"></script>
+   <div style="position:absolute; left:550px; top:0px" >
       <div>
          <h3>Vehicle Reference Point</h3>
          Direction (deg):<input type="text" name="direction" id="direction"><br>

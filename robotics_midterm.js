@@ -39,8 +39,10 @@ var GLOBAL_X = 0; //global vehicle x coordinate
 var GLOBAL_Y = 0; //global vehicle y coordinate
 var CANVAS_X = 0; //canvas vehicle x coordinate
 var CANVAS_Y = 0; //canvas vehicle y coordinate
-var DEGREES_IN_CIRCLE = 360; //degrees in a circle
+var DEG_IN_CIRCLE = 360; //degrees in a circle
 var NUM_DEC_PLACES = 2; //number of decimals places to show
+var X_MULT = 1; //used to determine which quadrant
+var Y_MULT = 1; //used to determine which quadrant
 
 //single stage that contains the grid and vehicle
 var stage = new Kinetic.Stage({
@@ -61,7 +63,7 @@ var rect = new Kinetic.Rect({
   fill: 'green',
   stroke: 'black',
   strokeWidth: 4,
-  offset: [VEHICLE_WIDTH/2, VEHICLE_HEIGHT/2] //set center as vehicle reference
+  offset: {x:VEHICLE_WIDTH/2, y:VEHICLE_HEIGHT/2} //set center as vehicle reference
 }); //end rect
 
 var BUFFER = 3; //if vehicle is within this number of feet, the view will center
@@ -167,12 +169,15 @@ var anim = new Kinetic.Animation(function(frame)
    document.getElementById("x_coord").innerHTML=(GLOBAL_X + CANVAS_X).toFixed(NUM_DEC_PLACES);
    document.getElementById("y_coord").innerHTML=(GLOBAL_Y + CANVAS_Y).toFixed(NUM_DEC_PLACES);
 
-   //TODO: this isn't actually deg/sec
    //rotate the vehicle
-   rect.rotate(ROTATION/1000);
+   if(ROTATION != 0)
+   {
+      var angleDiff = frame.timeDiff * ROTATION / SECOND_MS;     
+      rect.rotate(angleDiff);
+   }
    
    //update the diagnostic vehicle rotation
-   document.getElementById("cur_rot").innerHTML=(rect.getRotationDeg() % DEGREES_IN_CIRCLE).toFixed(NUM_DEC_PLACES);
+   document.getElementById("cur_rot").innerHTML=(rect.getRotationDeg() % DEG_IN_CIRCLE).toFixed(NUM_DEC_PLACES);
 
    //check to see if view needs to be repositioned
    checkRepositionView();
@@ -185,30 +190,33 @@ var animPointExecution = new Kinetic.Animation(function(frame)
 {
    //determine x component of speed value
    var speedX = feetToPixels(SPEED) * Math.cos(DIRECTION);
-   var newX = rect.getPosition().x + (speedX * frame.timeDiff) / SECOND_MS;
+   var newX = rect.getPosition().x + (X_MULT * ((speedX * frame.timeDiff) / SECOND_MS));
    
    //determine y component of speed value
    var speedY = feetToPixels(SPEED) * Math.sin(DIRECTION);
-   var newY = rect.getPosition().y + (speedY * frame.timeDiff) / SECOND_MS;
-   
+   var newY = rect.getPosition().y + (Y_MULT *((speedY * frame.timeDiff) / SECOND_MS));
+
    //move the vehicle
    rect.setX(newX);
    rect.setY(newY);
    
    //update global vehicle coordinates
    CANVAS_X = pixelsToFeet(newX - CENTER_X);
-   CANVAS_Y = pixelsToFeet(Math.abs(newY - CENTER_Y))
+   CANVAS_Y = -pixelsToFeet(newY - CENTER_Y);
    
    //update the diagnostic coordinates text on the page
    document.getElementById("x_coord").innerHTML=(GLOBAL_X + CANVAS_X).toFixed(NUM_DEC_PLACES);
    document.getElementById("y_coord").innerHTML=(GLOBAL_Y + CANVAS_Y).toFixed(NUM_DEC_PLACES);
 
-   //TODO: this isn't actually deg/sec
    //rotate the vehicle
-   //rect.rotate(ROTATION/1000);
+   if(ROTATION != 0)
+   {
+      var angleDiff = frame.timeDiff * ROTATION / SECOND_MS;  
+      rect.rotate(angleDiff);
+   }
    
    //update the diagnostic vehicle rotation
-   //document.getElementById("cur_rot").innerHTML=(rect.getRotationDeg() % DEGREES_IN_CIRCLE).toFixed(NUM_DEC_PLACES);
+   document.getElementById("cur_rot").innerHTML=(rect.getRotationDeg() % DEG_IN_CIRCLE).toFixed(NUM_DEC_PLACES);
 
    //check to see if view needs to be repositioned
    checkRepositionView();
@@ -276,7 +284,8 @@ function drawVehicle()
    stage.add(vehicleLayer);
 } //end drawVehicle
 
-/* @brief Action taken when the Go button is pressed for vehicle reference point
+/* @brief Action taken when the Go button is pressed for vehicle reference 
+ * point
  * @param direction The value that the user entered for direction
  * @param speed The value that the user entered for speed
  * @param rotation the value that the user entered for rotation
@@ -285,17 +294,20 @@ function goPressed(direction, speed, rotation)
 {
    if(validateUserInput(direction, speed, rotation) == true)
    {
-      //adjust angles so that vehicle and global coordinate systems initially line up
+      //adjust angles so that vehicle and global coordinate systems initially
+      //line up
       direction -= 90;
       animate(direction, speed, rotation);
    }
 } //end goPressed
 
-/* @brief Action taken when the Go button is pressed for point execution
+/* @brief Action taken when the Go button is pressed for point 
+ * execution
  * @param x The destination x coordinate
  * @param y The destination y coordinate
  * @param speed the value that the user entered for speed
- * @param orientation The orientation that the vehicle will be at the destination
+ * @param orientation The orientation that the vehicle will be at the 
+ * destination
  */
 function pointExecution(x, y, speed, orientation)
 {
@@ -336,6 +348,20 @@ function pointExecution(x, y, speed, orientation)
       return false;
    }
    
+   //set defaults
+   if(!direction)
+   {
+      direction = 0;
+   }
+   if(!speed)
+   {
+      speed = 0;
+   }
+   if(!rotation)
+   {
+      rotation = 0;
+   }
+   
    return true;
  } //end validateUserInput
 
@@ -343,7 +369,8 @@ function pointExecution(x, y, speed, orientation)
  * @param x The destination x coordinate
  * @param y The destination y coordinate
  * @param speed the value that the user entered for speed
- * @param orientation The orientation that the vehicle will be at the destination
+ * @param orientation The orientation that the vehicle will be at the 
+ * destination
  */
  function validateUserInputPointExecution(x, y, speed, orientation)
  {
@@ -367,6 +394,24 @@ function pointExecution(x, y, speed, orientation)
    {
       alert("Please enter a valid value for orientation");
       return false;
+   }
+   
+   //set defaults
+   if(!x)
+   {
+      x = 0;
+   }
+   if(!y)
+   {
+      y = 0;
+   }
+   if(!speed)
+   {
+      speed = 0;
+   }
+   if(!orientation)
+   {
+      orientation = 0;
    }
    
    return true;
@@ -393,35 +438,126 @@ function animate(direction, speed, rotation)
 function animatePointExecution(x, y, speed, orientation)
 {
    //determine the direction to the end point
-   deltaX = rect.getPosition().x - (rect.getPosition().x + feetToPixels(x));
-   deltaY = rect.getPosition().y - (rect.getPosition().y + feetToPixels(y));
+   deltaX = (rect.getPosition().x + feetToPixels(x)) - rect.getPosition().x;
+   deltaY = (rect.getPosition().y + feetToPixels(y)) - rect.getPosition().y;
+   
+   //determine how the sign of x and y will change
+   setSign(deltaX, deltaY);
 
-   //set animation variables
-   DIRECTION = Math.atan(deltaY/deltaX);
+   //set animation variable for speed
    SPEED = speed;
-
-   //calculate the distance the vehicle must travel
-   var distance = pixelsToFeet(deltaX / Math.sin(DIRECTION));
+   
+   //avoid divide by zero!
+   var distance = 0;
+   if(deltaX != 0)
+   {
+      if(deltaY != 0)
+      {
+         //there is movement in both x and y direction
+         DIRECTION = Math.atan(deltaY/deltaX);
+         //use Pythagoras' Theorem to get the distance to travel
+         distance = pixelsToFeet(Math.sqrt(Math.pow(deltaY,2) + Math.pow(deltaX,2)));
+      }
+      else
+      {  
+         //there is only movement in the x direction
+         DIRECTION = 0;
+         distance = pixelsToFeet(deltaX);
+      }
+   }
+   else
+   {
+      if(deltaY != 0)
+      {
+         //there is only movement in the y direction
+         DIRECTION = -Math.atan(deltaY/deltaX);
+         distance = pixelsToFeet(deltaY);
+      }
+      else
+      {  
+         //there is no movement
+         DIRECTION = 0;
+         distance = 0;
+      }
+   }
 
    //calculate the drive time in ms to destination
    TIME = Math.abs((distance / SPEED) * SECOND_MS);
-   console.log(TIME);
-
+   console.log(deltaX + " " + deltaY);
+   console.log("distance: " + distance);
+   console.log("DIRECTION: " + DIRECTION);
+   console.log("TIME: " + TIME);
+   
+   //determine rotation rate
+   if(orientation != 0)
+   {
+      ROTATION = orientation / (TIME / SECOND_MS);
+   }
+   else
+   {
+      ROTATION = 0;
+   }
+   
    animating = true;
    animPointExecution.start();
    document.getElementById("state").innerHTML="Animating";
 
 } //end animatePointexecution
 
-//reposition viewable area when vehicle reference point travels within 3 feet of screen edge
+/* @brief Determine what value to give the x and y multipliers. These
+ * multipliers will be used to increase or decrease the x and y 
+ * coordinates of the vehicle during animation.
+ * @param deltaX The requested change in x
+ * @param deltaY The requested change in y
+ */
+function setSign(deltaX, deltay)
+{
+   //1st quadrant
+   if(deltaY > 0 && deltaX > 0)
+   {
+      X_MULT = 1;
+      Y_MULT = -1;
+   }
+   //2nd quadrant
+   else if(deltaY > 0 && deltaX < 0)
+   {
+      X_MULT = -1;
+      Y_MULT = 1;
+   }
+   //3rd quadrant
+   else if(deltaY < 0 && deltaX < 0)
+   {
+      X_MULT = -1;
+      Y_MULT = 1;
+   }
+   //4th quadrant
+   else if(deltaY < 0 && deltaX > 0)
+   {
+      X_MULT = 1;
+      Y_MULT = -1;
+   }
+   else
+   {
+      X_MULT = 1;
+      Y_MULT = 1;
+      
+      if(deltaX < 0)
+      {
+         X_MULT = -1;
+      }
+   }
+}
+
+/* @brief Reposition viewable area when vehicle reference point travels within
+ * 3 feet of screen edge
+ */
 function checkRepositionView()
 { 
-
+   //determine buffer planes
    brx = rect.getPosition().x + (Math.cos(rect.getRotation()) * feetToPixels(BUFFER));
    bry = rect.getPosition().y + (Math.sin(rect.getRotation()) * feetToPixels(BUFFER));
    blx = rect.getPosition().x - (Math.cos(rect.getRotation()) * feetToPixels(BUFFER));
    bly = rect.getPosition().y - (Math.sin(rect.getRotation()) * feetToPixels(BUFFER));
-   
    btx = rect.getPosition().x + (Math.sin(rect.getRotation()) * feetToPixels(BUFFER));
    bty = rect.getPosition().y - (Math.cos(rect.getRotation()) * feetToPixels(BUFFER));
    bbx = rect.getPosition().x - (Math.sin(rect.getRotation()) * feetToPixels(BUFFER));
@@ -459,12 +595,20 @@ function repositionView()
    rect.setY(CENTER_Y);
 }
 
-/* @brief Helper function to convert an angel in degrees to radians
+/* @brief Helper function to convert an angle in degrees to radians
  * @param angle The angle to be converted to radians
  * @return The angle in radians
  */
 function toRadians (angle) {
   return angle * (Math.PI / 180);
+} //end toRadians
+
+/* @brief Helper function to convert an angle in radians to degrees
+ * @param angle The angle to be converted to degrees
+ * @return The angle in radians
+ */
+function toDegrees (angle) {
+  return angle * (180 / Math.PI);
 } //end toRadians
 
 /* @brief Helper function to convert feet to pixels
