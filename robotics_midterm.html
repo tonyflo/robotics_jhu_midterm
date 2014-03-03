@@ -10,7 +10,7 @@
    <script src="robotics_midterm.js" defer="defer"></script>
    <div style="position:absolute; left:550px; top:0px" >
       <div>
-         <h3>Vehicle Reference Point</h3>
+         <h3>Vehicle Reference Point Mode</h3>
          Direction (deg):<input type="text" name="direction" id="direction"><br>
          Speed (ft/sec):<input type="text" name="speed" id="speed"><br>
          Rate of Rotation (deg/sec):<input type="text" name="rotation" id="rotation"><br>
@@ -18,7 +18,18 @@
          <button onclick="reset()">Reset</button>
       </div>
       <div>
-         <h3>Point Execution</h3>
+         <h3>Mecanum Wheel Mode</h3>
+         
+         <p>Specify rotation rate for each wheel in <b>radians per second.</b></p>
+         Wheel 1:<input type="text" name="w1" id="w1">
+         Wheel 2:<input type="text" name="w2" id="w2"><br>
+         Wheel 3:<input type="text" name="w3" id="w3">
+         Wheel 4:<input type="text" name="w4" id="w4"><br>
+         <button id="button" onclick="mecanumExecution()">Go</button>
+         <button onclick="reset()">Reset</button>
+      </div>
+      <div>
+         <h3>Point Execution Mode</h3>
          X Coordinate:<input type="text" name="pointX" id="pointX"><br>
          Y Coordinate:<input type="text" name="pointY" id="pointY"><br>
          Time (sec):<input type="text" name="time" id="time"><br>
@@ -43,7 +54,6 @@
             <tr><td>X:</td><td id="x_coord">0.00</td><td>ft</td></tr>
             <tr><td>Y:</td><td id="y_coord">0.00</td><td>ft</td></tr>
             <tr><td>Speed:</td><td id="cur_speed">0.00</td><td>ft/sec</td></tr>
-            <!--<tr><td>Direction:</td><td id="cur_dir">0</td><td>deg</td></tr>-->
             <tr><td>Rotation:</td><td id="cur_rot">0.00</td><td>deg</td></tr>
          </table>
          <button onclick="reload()">Reload Page</button>

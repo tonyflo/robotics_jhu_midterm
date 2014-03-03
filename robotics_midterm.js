@@ -29,11 +29,6 @@ var GLOBAL_Y = 0; //global vehicle y coordinate
 var CANVAS_X = 0; //canvas vehicle x coordinate
 var CANVAS_Y = 0; //canvas vehicle y coordinate
 
-//waypoint variables
-var waypointCols = ["pointX", "pointY", "time", "orientation"];
-var waypoints = [];
-var cur_waypoint = 0;
-
 //requirements
 var MAX_SPEED = 15; //ft per second
  
@@ -54,6 +49,25 @@ var DEG_IN_CIRCLE = 360; //degrees in a circle
 var NUM_DEC_PLACES = 2; //number of decimals places to show
 var X_MULT = 1; //used to determine which quadrant
 var Y_MULT = 1; //used to determine which quadrant
+
+//waypoint variables
+var waypointCols = ["pointX", "pointY", "time", "orientation"];
+var waypoints = [];
+var cur_waypoint = 0;
+
+//mecanum variables
+var RADIUS = 0.25; //wheel radius in feet
+var wheel_rotations = [0, 0, 0, 0];
+var inverse_kinematic = [[ 1, 1, -(VEHICLE_WIDTH + VEHICLE_HEIGHT)],
+                         [-1, 1,  (VEHICLE_WIDTH + VEHICLE_HEIGHT)],
+                         [-1, 1, -(VEHICLE_WIDTH + VEHICLE_HEIGHT)],
+                         [ 1, 1,  (VEHICLE_WIDTH + VEHICLE_HEIGHT)]];
+var forward_kinematic = [[1, -1, -1, 1],
+                         [1,  1,  1, 1],
+                         [-1/(VEHICLE_WIDTH + VEHICLE_HEIGHT),
+                           1/(VEHICLE_WIDTH + VEHICLE_HEIGHT),
+                          -1/(VEHICLE_WIDTH + VEHICLE_HEIGHT),
+                           1/(VEHICLE_WIDTH + VEHICLE_HEIGHT)]];
 
 //single stage that contains the grid and vehicle
 var stage = new Kinetic.Stage({
@@ -153,6 +167,7 @@ if(DEBUG)
  */
 var anim = new Kinetic.Animation(function(frame) 
 {
+   //TODO: remove
    //var time = frame.time,
    //timeDiff = frame.timeDiff,
    //frameRate = frame.frameRate;
@@ -162,11 +177,11 @@ var anim = new Kinetic.Animation(function(frame)
    
    //determine x component of speed value
    var speedX = feetToPixels(SPEED) * Math.cos(toRadians(DIRECTION));
-   var newX = rect.getPosition().x + (speedX * frame.timeDiff) / SECOND_MS;
+   var newX = rect.getPosition().x + (X_MULT * (speedX * frame.timeDiff) / SECOND_MS);
    
    //determine y component of speed value
    var speedY = feetToPixels(SPEED) * Math.sin(toRadians(DIRECTION));
-   var newY = rect.getPosition().y + (speedY * frame.timeDiff) / SECOND_MS;
+   var newY = rect.getPosition().y + (Y_MULT * (speedY * frame.timeDiff) / SECOND_MS);
    
    //move the vehicle
    rect.setX(newX);
@@ -333,6 +348,28 @@ function goPressed(direction, speed, rotation)
    }
 } //end goPressed
 
+/* @brief Action taken when the Go button is pressed for mecanum wheel mode
+ */
+function mecanumExecution()
+{
+   reset();
+   
+   //get user input
+   for(var i = 0; i < wheel_rotations.length; i++)
+   {
+      wheel_rotations[i] = document.getElementById("w" + (i + 1)).value;
+   }
+
+   if(validateMecanum() == true)
+   {
+      animateMecanum();
+   }
+   else
+   {
+      document.getElementById("state").innerHTML="Invalid Input";
+   }
+} //end goPressed
+
 /* @brief Action taken when the Go button is pressed for point 
  * execution
  */
@@ -467,12 +504,7 @@ function addWaypoint()
    return status;
  } //end validateUserInput
 
-/* @brief Validate user input
- * @param x The destination x coordinate
- * @param y The destination y coordinate
- * @param time The value that the user entered for time
- * @param orientation The orientation that the vehicle will be at the 
- * destination
+/* @brief Validate user input for point execution mode
  */
  function validateUserInputPointExecution()
  {
@@ -534,10 +566,39 @@ function addWaypoint()
    return status;
  } //end validateUserInputPointExecution
  
-/* @brief Loop that animates the vehicle given parameters
- * @param direction The value that the user entered for direction
- * @param speed The value that the user entered for speed
- * @param rotation the value that the user entered for rotation
+function validateMecanum()
+{
+   var status = new Boolean(1);
+   
+   //check for numeric input
+   for(var i = 0; i < wheel_rotations.length; i++)
+   {
+      if(isNaN(wheel_rotations[i]))
+      {
+         alert("Please enter a valid value for wheel " + (i + 1));
+         status = false;
+      }
+   }
+
+   //set defaults
+   for(var i = 0; i < wheel_rotations.length; i++)
+   {
+      if(!wheel_rotations[i])
+      {
+         wheel_rotations[i] = 0;
+      }
+   }
+   
+   //fill in input
+   for(var i = 0; i < wheel_rotations.length; i++)
+   {
+      document.getElementById("w" + (i + 1)).value=wheel_rotations[i];
+   }
+   
+   return status;
+} //end validateMecanum
+ 
+/* @brief Animate the vehicle in vehicle reference point mode
  */
 function animate()
 {
@@ -554,10 +615,81 @@ function animate()
    anim.start();
    document.getElementById("state").innerHTML="Animating Vehicle Reference Point";
    document.getElementById("cur_speed").innerHTML=(SPEED).toFixed(NUM_DEC_PLACES);
-   //document.getElementById("cur_dir").innerHTML=toDegrees(DIRECTION).toFixed(NUM_DEC_PLACES);
 } //end animate
 
-/* @brief Loop that animates the vehicle given point execution parameters
+/* @brief Animate the vehicle in mecanum mode 
+ */
+function animateMecanum()
+{
+   //determine x and y component of velocity using forward kinematic equation
+   //as well as rotation
+   var matrix_mult_x = 0;
+   var matrix_mult_y = 0;
+   var matrix_mult_w = 0;
+   for(var i = 0; i < wheel_rotations.length; i++)
+   {
+      matrix_mult_x += forward_kinematic[0][i] * wheel_rotations[i];
+      matrix_mult_y += forward_kinematic[1][i] * wheel_rotations[i];
+      matrix_mult_w += forward_kinematic[2][i] * wheel_rotations[i];
+   }
+   var Vx = (RADIUS/4) * matrix_mult_x;
+   var Vy = (RADIUS/4) * matrix_mult_y;
+   var Vw = (RADIUS/4) * matrix_mult_w;
+   
+   //TOOD: rotation
+   ROTATION = -Vw;
+   
+   console.log(Vx + " " + Vy);
+   console.log(Vw);
+   
+   //determine velocity using Pythagoras' Theorem
+   SPEED = Math.sqrt(Math.pow(Vy,2) + Math.pow(Vx,2));
+   
+   //determine how the sign of x and y will change
+   setSign(Vx, Vy);
+   
+   //avoid dividing by negative
+   if(Vx != 0)
+   {
+      if(Vy != 0)
+      {
+         //there is movement in both x and y direction
+         DIRECTION = -toDegrees(Math.atan(Vy/Vx));
+         console.log("A");
+      }
+      else
+      {
+         //there is only movement in the x direction
+         DIRECTION = 0;
+         console.log("B");
+      }
+   }
+   else
+   {
+      if(Vy != 0)
+      {
+         //there is only movement in the y direction
+         DIRECTION = toDegrees(Math.atan(Vy/Vx));
+         console.log("C");
+      }
+      else
+      {
+         //there is no movement
+         DIRECTION = 0;
+         console.log("D");
+      }
+   }
+   
+   console.log("DIR: " + DIRECTION);
+   
+   //set state of animation to animating
+   animating = "vref";
+   anim.start();
+   document.getElementById("state").innerHTML="Animating Vehicle Reference Point";
+   document.getElementById("cur_speed").innerHTML=(SPEED).toFixed(NUM_DEC_PLACES);
+} //end animate
+
+/* @brief Animate the vehicle given point execution parameters
  * @param x The destination x coordinate
  * @param y The destination y coordinate
  * @param time The value that the user entered for time
@@ -652,7 +784,6 @@ function animatePointExecution(x, y, time, orientation)
       animPointExecution.start();
       document.getElementById("state").innerHTML="Animating Point Execution";
       document.getElementById("cur_speed").innerHTML=(SPEED).toFixed(NUM_DEC_PLACES);
-      //document.getElementById("cur_dir").innerHTML=toDegrees(DIRECTION).toFixed(NUM_DEC_PLACES);
    }
 } //end animatePointexecution
 
@@ -676,7 +807,7 @@ function speedLimit()
  * @param deltaX The requested change in x
  * @param deltaY The requested change in y
  */
-function setSign(deltaX, deltay)
+function setSign(deltaX, deltaY)
 {
    //4th quadrant
    if(deltaY > 0 && deltaX > 0)
@@ -811,10 +942,15 @@ function reset()
    DIRECTION = 0;
    ROTATION = 0;
    TIME = 0;
+   X = 0;
+   Y = 0;
+   ORIENTATION = 0;
    GLOBAL_X = 0;
    GLOBAL_Y = 0;
    CANVAS_X = 0;
    CANVAS_Y = 0;
+   X_MULT = 1;
+   Y_MULT = 1;
    
    //delete waypoint rows
    for(var i = 0; i < waypoints.length; i++)
@@ -839,11 +975,11 @@ function reset()
    document.getElementById("orientation").value="";
    
    //clear info
-   document.getElementById("x_coord").innerHTML=0;
-   document.getElementById("y_coord").innerHTML=0;
-   document.getElementById("cur_speed").innerHTML=SPEED;
-   document.getElementById("cur_time").innerHTML=TIME;
-   document.getElementById("cur_rot").innerHTML=ROTATION;
+   document.getElementById("x_coord").innerHTML="0.00";
+   document.getElementById("y_coord").innerHTML="0.00";
+   document.getElementById("cur_speed").innerHTML="0.00";
+   document.getElementById("cur_time").innerHTML="0.00";
+   document.getElementById("cur_rot").innerHTML="0.00";
 
    //update state
    document.getElementById("state").innerHTML="Not Animating";
