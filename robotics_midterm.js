@@ -60,7 +60,6 @@ var MAX_WAYPOINTS = 3;
 var RADIUS = 0.25; //wheel radius in feet
 var CIRCUMFERENCE = 2 * RADIUS * Math.PI;
 var FT_TRAVELED_PER_RADIAN = ((180/Math.PI)/360)*CIRCUMFERENCE;
-console.log(FT_TRAVELED_PER_RADIAN);
 var wheel_rotations = [0, 0, 0, 0];
 var inverse_kinematic = [[ 1, 1, -(VEHICLE_WIDTH + VEHICLE_HEIGHT)],
                          [-1, 1,  (VEHICLE_WIDTH + VEHICLE_HEIGHT)],
@@ -99,21 +98,21 @@ var BOUNDS_TOP = 0; //top edge of the canvas
 var BOUNDS_BOTTOM = HEIGHT_PX; //bottom edge of the canvas
 
 //brx=bounds right x, bty=bounds top y, etc
-var brx = rect.getPosition().x + feetToPixels(BUFFER);
-var bry = rect.getPosition().y;
-var blx = rect.getPosition().x - feetToPixels(BUFFER);
-var bly = rect.getPosition().y;
-var btx = rect.getPosition().x;
-var bty = rect.getPosition().y - feetToPixels(BUFFER);
-var bbx = rect.getPosition().x;
-var bby = rect.getPosition().y + feetToPixels(BUFFER);
+var brx = rect.getPosition().x + feetToPixels(BUFFER) + VEHICLE_WIDTH/2;
+var bry = rect.getPosition().y + VEHICLE_HEIGHT/2;
+var blx = rect.getPosition().x - feetToPixels(BUFFER) + VEHICLE_WIDTH/2;
+var bly = rect.getPosition().y  + VEHICLE_HEIGHT/2;
+var btx = rect.getPosition().x + VEHICLE_WIDTH/2;
+var bty = rect.getPosition().y - feetToPixels(BUFFER) + VEHICLE_HEIGHT/2;
+var bbx = rect.getPosition().x + VEHICLE_WIDTH/2;
+var bby = rect.getPosition().y + feetToPixels(BUFFER) + VEHICLE_HEIGHT/2;
 
 /****************************
  *
  * Debug
  *
  ****************************/
-var DEBUG = false;
+var DEBUG = true;
  
 //draw bounds markers
 if(DEBUG)
@@ -166,16 +165,11 @@ if(DEBUG)
  * Animations
  *
  ****************************/
- 
+
 /* @brief The main animation object that moves the vehicle reference point
  */
 var anim = new Kinetic.Animation(function(frame) 
 {
-   //TODO: remove
-   //var time = frame.time,
-   //timeDiff = frame.timeDiff,
-   //frameRate = frame.frameRate;
-   
    //update time
    document.getElementById("cur_time").innerHTML=(frame.time/SECOND_MS).toFixed(NUM_DEC_PLACES);
    
@@ -659,10 +653,15 @@ function animateMecanum()
    var Vw = (RADIUS/4) * matrix_mult_w;
    
    //TODO: rotation
-   ROTATION = -Vw;
+   ROTATION = -toDegrees(Vw);
    
-   console.log(Vx + " " + Vy);
-   console.log(Vw);
+   if(DEBUG == true)
+   {
+      console.log("Vx: " + Vx);
+      console.log("Vy: " + Vy);
+      console.log("Vw: " + Vw);
+      console.log("dg: " + toDegrees(Vw));
+   }
    
    //determine velocity using Pythagoras' Theorem
    SPEED = Math.sqrt(Math.pow(Vy,2) + Math.pow(Vx,2));
@@ -677,7 +676,7 @@ function animateMecanum()
       {
          //there is movement in both x and y direction
          DIRECTION = -toDegrees(Math.atan(Vy/Vx));
-         console.log("A");
+         console.log("A"); //TODO remove
       }
       else
       {
@@ -873,14 +872,14 @@ function setSign(deltaX, deltaY)
 function checkRepositionView()
 { 
    //determine buffer planes
-   brx = rect.getPosition().x + (Math.cos(rect.getRotation()) * feetToPixels(BUFFER));
-   bry = rect.getPosition().y + (Math.sin(rect.getRotation()) * feetToPixels(BUFFER));
-   blx = rect.getPosition().x - (Math.cos(rect.getRotation()) * feetToPixels(BUFFER));
-   bly = rect.getPosition().y - (Math.sin(rect.getRotation()) * feetToPixels(BUFFER));
-   btx = rect.getPosition().x + (Math.sin(rect.getRotation()) * feetToPixels(BUFFER));
-   bty = rect.getPosition().y - (Math.cos(rect.getRotation()) * feetToPixels(BUFFER));
-   bbx = rect.getPosition().x - (Math.sin(rect.getRotation()) * feetToPixels(BUFFER));
-   bby = rect.getPosition().y + (Math.cos(rect.getRotation()) * feetToPixels(BUFFER));
+   brx = rect.getPosition().x + (Math.cos(toRadians(rect.getRotation())) * feetToPixels(BUFFER));
+   bry = rect.getPosition().y + (Math.sin(toRadians(rect.getRotation())) * feetToPixels(BUFFER));
+   blx = rect.getPosition().x - (Math.cos(toRadians(rect.getRotation())) * feetToPixels(BUFFER));
+   bly = rect.getPosition().y - (Math.sin(toRadians(rect.getRotation())) * feetToPixels(BUFFER));
+   btx = rect.getPosition().x + (Math.sin(toRadians(rect.getRotation())) * feetToPixels(BUFFER));
+   bty = rect.getPosition().y - (Math.cos(toRadians(rect.getRotation())) * feetToPixels(BUFFER));
+   bbx = rect.getPosition().x - (Math.sin(toRadians(rect.getRotation())) * feetToPixels(BUFFER));
+   bby = rect.getPosition().y + (Math.cos(toRadians(rect.getRotation())) * feetToPixels(BUFFER));
 
 if(DEBUG)
 {
