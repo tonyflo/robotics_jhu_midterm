@@ -54,9 +54,13 @@ var Y_MULT = 1; //used to determine which quadrant
 var waypointCols = ["pointX", "pointY", "time", "orientation"];
 var waypoints = [];
 var cur_waypoint = 0;
+var MAX_WAYPOINTS = 3;
 
 //mecanum variables
 var RADIUS = 0.25; //wheel radius in feet
+var CIRCUMFERENCE = 2 * RADIUS * Math.PI;
+var FT_TRAVELED_PER_RADIAN = ((180/Math.PI)/360)*CIRCUMFERENCE;
+console.log(FT_TRAVELED_PER_RADIAN);
 var wheel_rotations = [0, 0, 0, 0];
 var inverse_kinematic = [[ 1, 1, -(VEHICLE_WIDTH + VEHICLE_HEIGHT)],
                          [-1, 1,  (VEHICLE_WIDTH + VEHICLE_HEIGHT)],
@@ -254,8 +258,8 @@ var animPointExecution = new Kinetic.Animation(function(frame)
    if(frame.time > (TIME * SECOND_MS))
    {
       animPointExecution.stop();
-      animating = false;
-      document.getElementById("state").innerHTML="Finished";
+      animating = "done";
+      document.getElementById("state").innerHTML="Finished, Reload";
       frame.time = 0;
       
       //execute another waypoint if need be
@@ -263,6 +267,10 @@ var animPointExecution = new Kinetic.Animation(function(frame)
       if(cur_waypoint < waypoints.length)
       {
          pointExecution(true);
+      }
+      else
+      {
+         animating = "reload";
       }
    }
 }, vehicleLayer); //end animPointExecution 
@@ -375,6 +383,12 @@ function mecanumExecution()
  */
 function pointExecution(waypointMode)
 {
+   if(animating == "reload")
+   {
+      alert("Please reload the page to perform another simulation.");
+      return;
+   }
+
    if(waypointMode == true)
    {
       //animate
@@ -395,20 +409,28 @@ function pointExecution(waypointMode)
  */
 function validateWaypoint()
 {
-   X = document.getElementById('pointX').value,
-   Y = document.getElementById('pointY').value;
-   TIME = document.getElementById('time').value;
-   ORIENTATION = document.getElementById('orientation').value;
-   
-   if(validateUserInputPointExecution() == true)
+   //check for max waypoints entered
+   if(MAX_WAYPOINTS > waypoints.length)
    {
-      addWaypoint();
-      return true;
+      X = document.getElementById('pointX').value,
+      Y = document.getElementById('pointY').value;
+      TIME = document.getElementById('time').value;
+      ORIENTATION = document.getElementById('orientation').value;
+      
+      if(validateUserInputPointExecution() == true)
+      {
+         addWaypoint();
+         return true;
+      }
+      else
+      {
+         document.getElementById("state").innerHTML="Invalid Input";
+         return false;
+      }
    }
    else
    {
-      document.getElementById("state").innerHTML="Invalid Input";
-      return false;
+      alert("Sorry but you can only enter a max of " + MAX_WAYPOINTS + " waypoints.");
    }
 } //end validateWaypoint
 
@@ -636,7 +658,7 @@ function animateMecanum()
    var Vy = (RADIUS/4) * matrix_mult_y;
    var Vw = (RADIUS/4) * matrix_mult_w;
    
-   //TOOD: rotation
+   //TODO: rotation
    ROTATION = -Vw;
    
    console.log(Vx + " " + Vy);
