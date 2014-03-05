@@ -8,9 +8,59 @@
 
 /****************************
  *
+ * Browser Set-up
+ *
+ ****************************/
+var BROWSER_WIDTH = 0;
+var BROWSER_HEIGHT = 0;
+var HEIGHT_PX = 0; //height of canvas
+var WIDTH_PX = 0; //width of canvas
+ 
+getBroswerSize();
+
+/* @brief Determine size of canvas based on width of browser window on load
+ */
+function getBroswerSize() 
+{
+   if( typeof( window.innerWidth ) == 'number' ) 
+   {
+       //Non-IE
+       BROWSER_WIDTH = window.innerWidth;
+       BROWSER_HEIGHT = window.innerHeight;
+   }
+   else if( document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) 
+   {
+       //IE 6+ in 'standards compliant mode'
+       BROWSER_WIDTH = document.documentElement.clientWidth;
+       BROWSER_HEIGHT = document.documentElement.clientHeight;
+   }
+   else if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) 
+   {
+       //IE 4 compatible
+       BROWSER_WIDTH = document.body.clientWidth;
+       BROWSER_HEIGHT = document.body.clientHeight;
+   }
+   console.log(BROWSER_WIDTH + " " + BROWSER_HEIGHT);
+
+   //make sure the width of the simulation area takes up no more than half of the window
+   if(BROWSER_HEIGHT/2 > BROWSER_WIDTH/2)
+   {
+      WIDTH_PX = BROWSER_WIDTH/2;
+      HEIGHT_PX = WIDTH_PX * 2;
+   }
+   else
+   {
+      HEIGHT_PX = BROWSER_HEIGHT;
+      WIDTH_PX = HEIGHT_PX/2;
+   }
+} //end getBrowserSize
+
+/****************************
+ *
  * Global Variables
  *
  ****************************/
+ 
 //state variables
  var animating = false; //state of animation
 
@@ -33,8 +83,6 @@ var CANVAS_Y = 0; //canvas vehicle y coordinate
 var MAX_SPEED = 15; //ft per second
  
 //canvas variables
-var WIDTH_PX = 500; //width of canvas
-var HEIGHT_PX = 1000; //height of canvas
 var WIDTH_FT = 10; //simulated width of canvas in feet
 var HEIGHT_FT = 20; //simulated height of canvas in feet
 var FT_2_CELL = 2; //2 cells make up a foot
@@ -71,7 +119,6 @@ var inverse_kinematic = [[ 1, 1, -(VEHICLE_WIDTH_FT + VEHICLE_HEIGHT_FT)],
                          [ 1, 1,  (VEHICLE_WIDTH_FT + VEHICLE_HEIGHT_FT)]];
 var forward_kinematic = [[1, -1, -1, 1],
                          [1,  1,  1, 1],
-                         //[-1,  1,  -1, 1]];
                          [-(1/(VEHICLE_WIDTH_FT + VEHICLE_HEIGHT_FT)),
                            (1/(VEHICLE_WIDTH_FT + VEHICLE_HEIGHT_FT)),
                           -(1/(VEHICLE_WIDTH_FT + VEHICLE_HEIGHT_FT)),
@@ -1029,6 +1076,9 @@ var imageObj = new Image();
 imageObj.src = "car.png";
 imageObj.onload = function() {
     rect.setFillPatternImage(imageObj);
+    rect.fillPatternScaleX(VEHICLE_WIDTH_PX/100);
+    rect.fillPatternScaleY(VEHICLE_HEIGHT_PX/200);
+   
     stage.draw();
 }
 drawVehicle();

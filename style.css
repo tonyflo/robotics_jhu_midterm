@@ -16,3 +16,14 @@
    color: #FFFFFF;
    background-color:#3D81FF;
 }
+
+.container
+{
+   margin: 0 auto;
+}
+
+html, body 
+{ 
+   margin: 0; 
+   padding: 0; 
+}

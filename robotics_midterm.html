@@ -1,11 +1,12 @@
 <!doctype html>
 <html>
-  <head>
-    <title>Robotics Midterm</title>
-    <style>html, body { margin: 0; padding: 0; }</style>
-  </head>
-  <body>
-   <div id="container"></div>
+   <head>
+      <title>Robotics Midterm</title>
+   </head>
+   <body>
+   <div id="left-half" style="width=50%">
+      <div id="container" clas="container"></div>
+   </div>
    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
    <link rel="stylesheet" type="text/css" href="style.css" />
    <script type="text/javascript">
@@ -20,7 +21,7 @@
    </script>
    <script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v5.0.1.min.js"></script>
    <script src="robotics_midterm.js" defer="defer"></script>
-   <div style="position:absolute; left:500px; top:0px; width:100%" >
+   <div style="position:absolute; left:50%; top:0px; width:50%; overflow-y: scroll; height:100%">
       <div class="collapsable">
          <h3 class="heading">&#x25bc; Vehicle Reference Point Mode</h3>
          <div class="content">
@@ -58,12 +59,21 @@
          <h3 class="heading">&#x25bc; Path Execution Mode</h3>
          <div class="content">
             <h4>Circle</h4>
+            <label>Radius (ft):</label><input type="text" name="circle_rad" id="circle_rad"><br>
+            <label>Inclination (deg):</label><input type="text" name="circle_inc" id="circle_inc"><br>
             <button id="button" onclick="mecanumExecution()">Go</button>
             <button onclick="reset()">Reset</button>
             <h4>Rectangle</h4>
+            <label>Width (ft):</label><input type="text" name="rect_w" id="rect_w"><br>
+            <label>Height (ft):</label><input type="text" name="rect_h" id="rect_h"><br>
+            <label>Inclination (deg):</label><input type="text" name="rect_inc" id="rect_inc"><br>
             <button id="button" onclick="mecanumExecution()">Go</button>
             <button onclick="reset()">Reset</button>
             <h4>Figure 8</h4>
+            <label>Radius 1 (ft):</label><input type="text" name="fig8_1_rad" id="fig8_1_rad"><br>
+            <label>Inclination 1 (deg):</label><input type="text" name="fig8_1_inc" id="fig8_1_inc"><br>
+            <label>Radius 2 (ft):</label><input type="text" name="fig8_2_rad" id="fig8_2_rad"><br>
+            <label>Inclination 2 (deg):</label><input type="text" name="fig8_2_inc" id="fig8_2_inc"><br>
             <button id="button" onclick="mecanumExecution()">Go</button>
             <button onclick="reset()">Reset</button>
          </div>
