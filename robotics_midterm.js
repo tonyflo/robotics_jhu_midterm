@@ -40,8 +40,10 @@ var HEIGHT_FT = 20; //simulated height of canvas in feet
 var FT_2_CELL = 2; //2 cells make up a foot
 var NUM_VERT_GRIDS = WIDTH_FT * FT_2_CELL; //number of vertical grid-lines
 var NUM_HORIZ_GRIDS = HEIGHT_FT * FT_2_CELL; //number of horizontal grid-lines
-var VEHICLE_WIDTH = 2*FT_2_CELL*(WIDTH_PX/NUM_VERT_GRIDS); //width pixels
-var VEHICLE_HEIGHT = 4*FT_2_CELL*(WIDTH_PX/NUM_VERT_GRIDS); //height pixels
+var VEHICLE_WIDTH_FT = 2; //vehcile width ft
+var VEHICLE_HEIGHT_FT = 4; //vehicle height ft
+var VEHICLE_WIDTH_PX = VEHICLE_WIDTH_FT*FT_2_CELL*(WIDTH_PX/NUM_VERT_GRIDS); //width pixels
+var VEHICLE_HEIGHT_PX = VEHICLE_HEIGHT_FT*FT_2_CELL*(WIDTH_PX/NUM_VERT_GRIDS); //height pixels
 var SECOND_MS = 1000; //number of milliseconds in a second
 var CENTER_X = WIDTH_PX /2; //center of canvas x
 var CENTER_Y = HEIGHT_PX/2; //center of canvas y
@@ -49,6 +51,8 @@ var DEG_IN_CIRCLE = 360; //degrees in a circle
 var NUM_DEC_PLACES = 2; //number of decimals places to show
 var X_MULT = 1; //used to determine which quadrant
 var Y_MULT = 1; //used to determine which quadrant
+
+console.log("w: " + VEHICLE_WIDTH_PX + " h: " + VEHICLE_HEIGHT_PX);
 
 //waypoint variables
 var waypointCols = ["pointX", "pointY", "time", "orientation"];
@@ -61,16 +65,17 @@ var RADIUS = 0.25; //wheel radius in feet
 var CIRCUMFERENCE = 2 * RADIUS * Math.PI;
 var FT_TRAVELED_PER_RADIAN = ((180/Math.PI)/360)*CIRCUMFERENCE;
 var wheel_rotations = [0, 0, 0, 0];
-var inverse_kinematic = [[ 1, 1, -(VEHICLE_WIDTH + VEHICLE_HEIGHT)],
-                         [-1, 1,  (VEHICLE_WIDTH + VEHICLE_HEIGHT)],
-                         [-1, 1, -(VEHICLE_WIDTH + VEHICLE_HEIGHT)],
-                         [ 1, 1,  (VEHICLE_WIDTH + VEHICLE_HEIGHT)]];
+var inverse_kinematic = [[ 1, 1, -(VEHICLE_WIDTH_FT + VEHICLE_HEIGHT_FT)],
+                         [-1, 1,  (VEHICLE_WIDTH_FT + VEHICLE_HEIGHT_FT)],
+                         [-1, 1, -(VEHICLE_WIDTH_FT + VEHICLE_HEIGHT_FT)],
+                         [ 1, 1,  (VEHICLE_WIDTH_FT + VEHICLE_HEIGHT_FT)]];
 var forward_kinematic = [[1, -1, -1, 1],
                          [1,  1,  1, 1],
-                         [-1/(VEHICLE_WIDTH + VEHICLE_HEIGHT),
-                           1/(VEHICLE_WIDTH + VEHICLE_HEIGHT),
-                          -1/(VEHICLE_WIDTH + VEHICLE_HEIGHT),
-                           1/(VEHICLE_WIDTH + VEHICLE_HEIGHT)]];
+                         //[-1,  1,  -1, 1]];
+                         [-(1/(VEHICLE_WIDTH_FT + VEHICLE_HEIGHT_FT)),
+                           (1/(VEHICLE_WIDTH_FT + VEHICLE_HEIGHT_FT)),
+                          -(1/(VEHICLE_WIDTH_FT + VEHICLE_HEIGHT_FT)),
+                           (1/(VEHICLE_WIDTH_FT + VEHICLE_HEIGHT_FT))]];
 
 //single stage that contains the grid and vehicle
 var stage = new Kinetic.Stage({
@@ -84,11 +89,11 @@ var vehicleLayer = new Kinetic.Layer();
 
 //the vehicle shape
 var rect = new Kinetic.Rect({
-  x: WIDTH_PX /2 - VEHICLE_WIDTH/2,
-  y: HEIGHT_PX/2 - VEHICLE_HEIGHT/2,
-  width: VEHICLE_WIDTH,
-  height: VEHICLE_HEIGHT,
-  offset: {x:VEHICLE_WIDTH/2, y:VEHICLE_HEIGHT/2} //set center as vehicle reference
+  x: WIDTH_PX /2 - VEHICLE_WIDTH_PX/2,
+  y: HEIGHT_PX/2 - VEHICLE_HEIGHT_PX/2,
+  width: VEHICLE_WIDTH_PX,
+  height: VEHICLE_HEIGHT_PX,
+  offset: {x:VEHICLE_WIDTH_PX/2, y:VEHICLE_HEIGHT_PX/2} //set center as vehicle reference
 }); //end rect
 
 var BUFFER = 3; //if vehicle is within this number of feet, the view will center
@@ -98,14 +103,14 @@ var BOUNDS_TOP = 0; //top edge of the canvas
 var BOUNDS_BOTTOM = HEIGHT_PX; //bottom edge of the canvas
 
 //brx=bounds right x, bty=bounds top y, etc
-var brx = rect.getPosition().x + feetToPixels(BUFFER) + VEHICLE_WIDTH/2;
-var bry = rect.getPosition().y + VEHICLE_HEIGHT/2;
-var blx = rect.getPosition().x - feetToPixels(BUFFER) + VEHICLE_WIDTH/2;
-var bly = rect.getPosition().y  + VEHICLE_HEIGHT/2;
-var btx = rect.getPosition().x + VEHICLE_WIDTH/2;
-var bty = rect.getPosition().y - feetToPixels(BUFFER) + VEHICLE_HEIGHT/2;
-var bbx = rect.getPosition().x + VEHICLE_WIDTH/2;
-var bby = rect.getPosition().y + feetToPixels(BUFFER) + VEHICLE_HEIGHT/2;
+var brx = rect.getPosition().x + feetToPixels(BUFFER) + VEHICLE_WIDTH_PX/2;
+var bry = rect.getPosition().y + VEHICLE_HEIGHT_PX/2;
+var blx = rect.getPosition().x - feetToPixels(BUFFER) + VEHICLE_WIDTH_PX/2;
+var bly = rect.getPosition().y  + VEHICLE_HEIGHT_PX/2;
+var btx = rect.getPosition().x + VEHICLE_WIDTH_PX/2;
+var bty = rect.getPosition().y - feetToPixels(BUFFER) + VEHICLE_HEIGHT_PX/2;
+var bbx = rect.getPosition().x + VEHICLE_WIDTH_PX/2;
+var bby = rect.getPosition().y + feetToPixels(BUFFER) + VEHICLE_HEIGHT_PX/2;
 
 /****************************
  *
@@ -647,7 +652,9 @@ function animateMecanum()
       matrix_mult_x += forward_kinematic[0][i] * wheel_rotations[i];
       matrix_mult_y += forward_kinematic[1][i] * wheel_rotations[i];
       matrix_mult_w += forward_kinematic[2][i] * wheel_rotations[i];
+      console.log(matrix_mult_w + "+=" +  forward_kinematic[2][i] + "*" + wheel_rotations[i]);
    }
+   console.log("MM" + matrix_mult_w);
    var Vx = (RADIUS/4) * matrix_mult_x;
    var Vy = (RADIUS/4) * matrix_mult_y;
    var Vw = (RADIUS/4) * matrix_mult_w;
@@ -701,7 +708,10 @@ function animateMecanum()
       }
    }
    
-   console.log("DIR: " + DIRECTION);
+   if(DEBUG == true)
+   {
+      console.log("DIR: " + DIRECTION);
+   }
    
    //set state of animation to animating
    animating = "vref";
