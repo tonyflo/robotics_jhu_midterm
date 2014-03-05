@@ -6,50 +6,75 @@
   </head>
   <body>
    <div id="container"></div>
+   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+   <link rel="stylesheet" type="text/css" href="style.css" />
+   <script type="text/javascript">
+      jQuery(document).ready(function() {
+        jQuery(".content").hide();
+        //toggle the componenet with class msg_body
+        jQuery(".heading").click(function()
+        {
+          jQuery(this).next(".content").slideToggle(500);
+        });
+      });
+   </script>
    <script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v5.0.1.min.js"></script>
    <script src="robotics_midterm.js" defer="defer"></script>
-   <div style="position:absolute; left:550px; top:0px" >
-      <div>
-         <h3>Vehicle Reference Point Mode</h3>
-         Direction (deg):<input type="text" name="direction" id="direction"><br>
-         Speed (ft/sec):<input type="text" name="speed" id="speed"><br>
-         Rate of Rotation (deg/sec):<input type="text" name="rotation" id="rotation"><br>
-         <button id="button" onclick="goPressed(document.getElementById('direction').value, document.getElementById('speed').value, document.getElementById('rotation').value)">Go</button>
-         <button onclick="reset()">Reset</button>
+   <div style="position:absolute; left:500px; top:0px; width:100%" >
+      <div class="collapsable">
+         <h3 class="heading">&#x25bc; Vehicle Reference Point Mode</h3>
+         <div class="content">
+            <label>Direction (deg):</label><input type="text" name="direction" id="direction"><br>
+            <label>Speed (ft/sec):</label><input type="text" name="speed" id="speed"><br>
+            <label>Rate of Rotation (deg/sec):</label><input type="text" name="rotation" id="rotation"><br>
+            <button id="button" onclick="goPressed(document.getElementById('direction').value, document.getElementById('speed').value, document.getElementById('rotation').value)">Go</button>
+            <button onclick="reset()">Reset</button>
+         </div>
+         <h3 class="heading">&#x25bc; Mecanum Wheel Mode</h3>
+         <div class="content">
+            <p>Specify rotation rate for each wheel in <b>radians per second.</b></p>
+            <label>Wheel 1:</label><input type="text" name="w1" id="w1">
+            <label>Wheel 2:</label><input type="text" name="w2" id="w2"><br>
+            <label>Wheel 3:</label><input type="text" name="w3" id="w3">
+            <label>Wheel 4:</label><input type="text" name="w4" id="w4"><br>
+            <button id="button" onclick="mecanumExecution()">Go</button>
+            <button onclick="reset()">Reset</button>
+         </div>
+         <h3 class="heading">&#x25bc; Point Execution Mode</h3>
+         <div  class="content">
+            <label>X Coordinate:</label><input type="text" name="pointX" id="pointX"><br>
+            <label>Y Coordinate:</label><input type="text" name="pointY" id="pointY"><br>
+            <label>Time (sec):</label><input type="text" name="time" id="time"><br>
+            <label>End Orientation (deg):</label><input type="text" name="orientation" id="orientation"><br>
+            <button id="button" onclick="pointExecution(false)">Go</button>
+            <button onclick="validateWaypoint()">Add</button>
+            <button onclick="reset()">Reset</button><br><br>
+            <caption>Waypoints</caption>
+            <table id="waypoints" border="1">
+            <tr><th>X</th><th>Y</th><th>Time</th><th>Orientation</th></tr>
+            </table>
+            <button onclick="pointExecution(true)">Go</button>
+         </div>
+         <h3 class="heading">&#x25bc; Path Execution Mode</h3>
+         <div class="content">
+            <h4>Circle</h4>
+            <button id="button" onclick="mecanumExecution()">Go</button>
+            <button onclick="reset()">Reset</button>
+            <h4>Rectangle</h4>
+            <button id="button" onclick="mecanumExecution()">Go</button>
+            <button onclick="reset()">Reset</button>
+            <h4>Figure 8</h4>
+            <button id="button" onclick="mecanumExecution()">Go</button>
+            <button onclick="reset()">Reset</button>
+         </div>
       </div>
       <div>
-         <h3>Mecanum Wheel Mode</h3>
-         
-         <p>Specify rotation rate for each wheel in <b>radians per second.</b></p>
-         Wheel 1:<input type="text" name="w1" id="w1">
-         Wheel 2:<input type="text" name="w2" id="w2"><br>
-         Wheel 3:<input type="text" name="w3" id="w3">
-         Wheel 4:<input type="text" name="w4" id="w4"><br>
-         <button id="button" onclick="mecanumExecution()">Go</button>
-         <button onclick="reset()">Reset</button>
-      </div>
-      <div>
-         <h3>Point Execution Mode</h3>
-         X Coordinate:<input type="text" name="pointX" id="pointX"><br>
-         Y Coordinate:<input type="text" name="pointY" id="pointY"><br>
-         Time (sec):<input type="text" name="time" id="time"><br>
-         End Orientation (deg):<input type="text" name="orientation" id="orientation"><br>
-         <button id="button" onclick="pointExecution(false)">Go</button>
-         <button onclick="validateWaypoint()">Add</button>
-         <button onclick="reset()">Reset</button><br><br>
-         <caption>Waypoints</caption>
-         <table id="waypoints" border="1">
-         <tr><th>X</th><th>Y</th><th>Time</th><th>Orientation</th></tr>
-         </table>
-         <button onclick="pointExecution(true)">Go</button>
-      </div>
-      <div>
-         <h3>Animation Information</h3>
+         <h3 class="static">Animation Information</h3>
          <table border="1">
             <tr><td>State:</td><td id="state" colspan="2">Not Animating</td></tr>
             <tr><td>Time:</td><td id="cur_time">0.00</td><td>sec</td></tr>
          </table>
-         <h3>Vehicle Information</h3>
+         <h3 class="static">Vehicle Information</h3>
          <table border="1">
             <tr><td>X:</td><td id="x_coord">0.00</td><td>ft</td></tr>
             <tr><td>Y:</td><td id="y_coord">0.00</td><td>ft</td></tr>
