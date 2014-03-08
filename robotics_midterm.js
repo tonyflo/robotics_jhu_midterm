@@ -15,14 +15,12 @@ var BROWSER_WIDTH = 0;
 var BROWSER_HEIGHT = 0;
 var HEIGHT_PX = 0; //height of canvas
 var WIDTH_PX = 0; //width of canvas
- 
-getBroswerSize();
 
 /* @brief Determine size of canvas based on width of browser window on load
  */
 function getBroswerSize() 
 {
-   if( typeof( window.innerWidth ) == 'number' ) 
+   if(typeof( window.innerWidth ) == 'number') 
    {
        //Non-IE
        BROWSER_WIDTH = window.innerWidth;
@@ -54,6 +52,8 @@ function getBroswerSize()
       WIDTH_PX = HEIGHT_PX/2;
    }
 } //end getBrowserSize
+
+getBroswerSize();
 
 /****************************
  *
@@ -100,8 +100,6 @@ var NUM_DEC_PLACES = 2; //number of decimals places to show
 var X_MULT = 1; //used to determine which quadrant
 var Y_MULT = 1; //used to determine which quadrant
 
-console.log("w: " + VEHICLE_WIDTH_PX + " h: " + VEHICLE_HEIGHT_PX);
-
 //waypoint variables
 var waypointCols = ["pointX", "pointY", "time", "orientation"];
 var waypoints = [];
@@ -124,6 +122,12 @@ var forward_kinematic = [[1, -1, -1, 1],
                           -(1/(VEHICLE_WIDTH_FT + VEHICLE_HEIGHT_FT)),
                            (1/(VEHICLE_WIDTH_FT + VEHICLE_HEIGHT_FT))]];
 
+//path variables
+var CIRCLE_RADIUS = 0;
+var INCLINATION = 0;
+var RECT_W = 0;
+var RECT_H = 0;
+                           
 //single stage that contains the grid and vehicle
 var stage = new Kinetic.Stage({
   container: 'container',
@@ -260,6 +264,53 @@ var anim = new Kinetic.Animation(function(frame)
 
 }, vehicleLayer); //end anim 
 
+
+/* @brief The main animation object that moves the vehicle in a circle
+ */
+var animCircle = new Kinetic.Animation(function(frame) 
+{
+   //update time
+   document.getElementById("cur_time").innerHTML=(frame.time/SECOND_MS).toFixed(NUM_DEC_PLACES);
+   
+   //set direction based on time
+   DIRECTION += (frame.timeDiff * (360/TIME)) / SECOND_MS;
+   console.log(DIRECTION);
+   
+   //determine x component of speed value
+   var speedX = feetToPixels(SPEED) * Math.cos(toRadians(DIRECTION));
+   var newX = rect.getPosition().x + (X_MULT * (speedX * frame.timeDiff) / SECOND_MS);
+   
+   //determine y component of speed value
+   var speedY = feetToPixels(SPEED) * Math.sin(toRadians(DIRECTION));
+   var newY = rect.getPosition().y + (Y_MULT * (speedY * frame.timeDiff) / SECOND_MS);
+   
+   //move the vehicle
+   rect.setX(newX);
+   rect.setY(newY);
+   
+   //update global vehicle coordinates
+   CANVAS_X = pixelsToFeet(newX - CENTER_X);
+   CANVAS_Y = pixelsToFeet(Math.abs(newY - CENTER_Y))
+   
+   //update the diagnostic coordinates text on the page
+   document.getElementById("x_coord").innerHTML=(GLOBAL_X + CANVAS_X).toFixed(NUM_DEC_PLACES);
+   document.getElementById("y_coord").innerHTML=-(GLOBAL_Y + CANVAS_Y).toFixed(NUM_DEC_PLACES);
+
+   //rotate the vehicle
+   if(ROTATION != 0)
+   {
+      var angleDiff = frame.timeDiff * ROTATION / SECOND_MS;     
+      rect.rotate(angleDiff);
+   }
+   
+   //update the diagnostic vehicle rotation
+   document.getElementById("cur_rot").innerHTML=(rect.getRotationDeg() % DEG_IN_CIRCLE).toFixed(NUM_DEC_PLACES);
+
+   //check to see if view needs to be repositioned
+   checkRepositionView();
+
+}, vehicleLayer); //end animCircle
+
 /* @brief The main animation object for point execution
  */
 var animPointExecution = new Kinetic.Animation(function(frame) 
@@ -281,7 +332,7 @@ var animPointExecution = new Kinetic.Animation(function(frame)
    
    //update global vehicle coordinates
    CANVAS_X = pixelsToFeet(newX - CENTER_X);
-   CANVAS_Y = -pixelsToFeet(newY - CENTER_Y);
+   CANVAS_Y = pixelsToFeet(newY - CENTER_Y);
    
    //update the diagnostic coordinates text on the page
    document.getElementById("x_coord").innerHTML=(GLOBAL_X + CANVAS_X).toFixed(NUM_DEC_PLACES);
@@ -422,7 +473,39 @@ function mecanumExecution()
    {
       document.getElementById("state").innerHTML="Invalid Input";
    }
-} //end goPressed
+} //end mecanumExecution
+
+/* @brief Action taken when the Go button is pressed for circle mode
+ */
+function circleExecution()
+{
+   reset();
+
+   if(validateUserInputCircle() == true)
+   {
+      animateCircle();
+   }
+   else
+   {
+      document.getElementById("state").innerHTML="Invalid Input";
+   }
+} //end circleExecution
+
+/* @brief Action taken when the Go button is pressed for rectangle mode
+ */
+function rectangleExecution()
+{
+   reset();
+
+   if(validateUserInputRectangle() == true)
+   {
+      animateRectangle();
+   }
+   else
+   {
+      document.getElementById("state").innerHTML="Invalid Input";
+   }
+} //end rectangleExecution
 
 /* @brief Action taken when the Go button is pressed for point 
  * execution
@@ -458,7 +541,7 @@ function validateWaypoint()
    //check for max waypoints entered
    if(MAX_WAYPOINTS > waypoints.length)
    {
-      X = document.getElementById('pointX').value,
+      X = document.getElementById('pointX').value;
       Y = document.getElementById('pointY').value;
       TIME = document.getElementById('time').value;
       ORIENTATION = document.getElementById('orientation').value;
@@ -477,6 +560,7 @@ function validateWaypoint()
    else
    {
       alert("Sorry but you can only enter a max of " + MAX_WAYPOINTS + " waypoints.");
+      return false;
    }
 } //end validateWaypoint
 
@@ -572,6 +656,145 @@ function addWaypoint()
    return status;
  } //end validateUserInput
 
+/* @brief Validate user input for circle mode
+ */
+ function validateUserInputCircle()
+ {
+   var status = new Boolean(1);
+   
+   CIRCLE_RADIUS = document.getElementById("circle_rad").value;
+   INCLINATION = document.getElementById("circle_inc").value;
+   TIME = document.getElementById("circle_sec").value;
+   
+   //check for numeric input
+   if(isNaN(CIRCLE_RADIUS))
+   {
+      alert("Please enter a valid value for radius)");
+      status = false;
+   }
+   if(isNaN(INCLINATION))
+   {
+      alert("Please enter a valid value for inclination");
+      status = false;
+   }
+   if(isNaN(TIME))
+   {
+      alert("Please enter a valid value for time");
+      status = false;
+   }
+   
+   //check negatives
+   if(CIRCLE_RADIUS < 0)
+   {
+      alert("Radius cannot be negative");
+      status = false;
+   }
+   if(TIME <= 0)
+   {
+      alert("Time must be positive");
+      status = false;
+   }
+   
+   //set defaults
+   if(!CIRCLE_RADIUS)
+   {
+      CIRCLE_RADIUS = 0;
+   }
+   if(!INCLINATION)
+   {
+      INCLINATION = 0;
+   }
+   if(!TIME)
+   {
+      TIME = 0;
+   }
+   
+   //fill in input
+   document.getElementById("circle_rad").value=CIRCLE_RADIUS;
+   document.getElementById("circle_inc").value=INCLINATION;
+   document.getElementById("circle_sec").value=TIME;
+
+   return status;
+ } //end validateUserInputCircle
+ 
+ /* @brief Validate user input for circle mode
+ */
+ function validateUserInputRectangle()
+ {
+   var status = new Boolean(1);
+   
+   RECT_W = document.getElementById("rect_w").value;
+   RECT_H = document.getElementById("rect_h").value;
+   INCLINATION =  document.getElementById("rect_inc").value;
+   TIME = document.getElementById("rect_sec").value;
+   
+   //check for numeric input
+   if(isNaN(RECT_W))
+   {
+      alert("Please enter a valid value for width)");
+      status = false;
+   }
+   if(isNaN(RECT_H))
+   {
+      alert("Please enter a valid value for height)");
+      status = false;
+   }
+   if(isNaN(INCLINATION))
+   {
+      alert("Please enter a valid value for inclination");
+      status = false;
+   }
+   if(isNaN(TIME))
+   {
+      alert("Please enter a valid value for time");
+      status = false;
+   }
+   
+   //check negatives
+   if(RECT_W <= 0)
+   {
+      alert("Width must be positive");
+      status = false;
+   }
+   if(RECT_H <= 0)
+   {
+      alert("Height must be positive");
+      status = false;
+   }
+   if(TIME <= 0)
+   {
+      alert("Time must be positive");
+      status = false;
+   }
+   
+   //set defaults
+   if(!RECT_W)
+   {
+      RECT_W = 0;
+   }
+   if(!RECT_H)
+   
+   {
+      RECT_H = 0;
+   }
+   if(!INCLINATION)
+   {
+      INCLINATION = 0;
+   }
+   if(!TIME)
+   {
+      TIME = 0;
+   }
+   
+   //fill in input
+   document.getElementById("rect_w").value=RECT_W;
+   document.getElementById("rect_h").value=RECT_H;
+   document.getElementById("rect_inc").value=INCLINATION;
+   document.getElementById("rect_sec").value=TIME;
+
+   return status;
+ } //end validateUserInputRectangle
+ 
 /* @brief Validate user input for point execution mode
  */
  function validateUserInputPointExecution()
@@ -706,7 +929,7 @@ function animateMecanum()
    var Vy = (RADIUS/4) * matrix_mult_y;
    var Vw = (RADIUS/4) * matrix_mult_w;
    
-   //TODO: rotation
+   //rotation in degrees
    ROTATION = -toDegrees(Vw);
    
    if(DEBUG == true)
@@ -719,6 +942,11 @@ function animateMecanum()
    
    //determine velocity using Pythagoras' Theorem
    SPEED = Math.sqrt(Math.pow(Vy,2) + Math.pow(Vx,2));
+   
+   if(speedLimit() == false)
+   {
+      return;
+   }
    
    //determine how the sign of x and y will change
    setSign(Vx, Vy);
@@ -765,7 +993,119 @@ function animateMecanum()
    anim.start();
    document.getElementById("state").innerHTML="Animating Vehicle Reference Point";
    document.getElementById("cur_speed").innerHTML=(SPEED).toFixed(NUM_DEC_PLACES);
-} //end animate
+} //end animateMecanum
+
+/* @brief Animate the vehicle in a circle
+ */
+function animateCircle()
+{
+   CIRCLE_RADIUS = document.getElementById("circle_rad").value;
+   INCLINATION = document.getElementById("circle_inc").value;
+   TIME = document.getElementById("circle_sec").value;
+   DIRECTION = parseFloat(INCLINATION);
+   
+   //calculated distance and speed
+   var circumference = 2 * Math.PI * CIRCLE_RADIUS;
+   SPEED = circumference / TIME;
+   
+   if(DEBUG == true)
+   {
+      console.log("CIRCLE_RADIUS: " + CIRCLE_RADIUS);
+      console.log("INCLINATION: " + INCLINATION);
+      console.log("TIME: " + TIME);
+      console.log("SPEED: " + SPEED);
+      console.log("circumference: " + circumference);
+   }
+   
+   if(speedLimit() == true)
+   {
+      //set state of animation to animating
+      animating = true;
+      animCircle.start();
+      document.getElementById("state").innerHTML="Animating Circle";
+      document.getElementById("cur_speed").innerHTML=(SPEED).toFixed(NUM_DEC_PLACES);
+   }
+} //end animateCircle
+
+/* @brief Animate the vehicle in a rectangle
+ */
+function animateRectangle()
+{
+   RECT_W = document.getElementById("rect_w").value;
+   RECT_H = document.getElementById("rect_h").value;
+   INCLINATION = document.getElementById("rect_inc").value;
+   TIME = document.getElementById("rect_sec").value;
+   
+    //calculated distance and time per side
+   var distance = (RECT_W * 2) + (RECT_H * 2);
+   var time_side = [(RECT_H/distance)*TIME, (RECT_W/distance)*TIME]; //height, width
+   
+   if(DEBUG == true)
+   {
+      console.log("RECT_W: " + RECT_W);
+      console.log("RECT_H: " + RECT_H);
+      console.log("INCLINATION (rad): " + toRadians(INCLINATION));
+      console.log("TIME: " + TIME);
+      console.log("time_w: " + time_side[0]);
+      console.log("time_h: " + time_side[1]);
+      console.log("distance: " + distance);
+   }
+   
+   //trig
+   var hyp = Math.sqrt(Math.pow(RECT_W,2) + Math.pow(RECT_H,2)); //hypotenuse of rectangle
+   var theta = Math.atan(RECT_W/RECT_H);
+   var j = toRadians(90) - toRadians(INCLINATION) - theta;
+   var k = toRadians(90) - j;
+   var a = theta + j;
+   
+   if(DEBUG == true)
+   {
+      console.log(hyp);
+      console.log(theta);
+      console.log(j);
+      console.log(k);
+      console.log(a);
+   }
+   
+   var corners = [[RECT_W * Math.cos(k), RECT_H * Math.sin(k)], 
+                  [hyp * Math.cos(a), hyp * Math.sin(a)],
+                  [RECT_W * Math.cos(j), RECT_H * Math.sin(j)],
+                  [0, 0]];
+   
+   var wpts = []; //rectangle corners in feet
+   var wpxs = [CENTER_X, CENTER_Y]; //rectangle corners in pixels
+   
+   for(var i = 0; i < 4; i ++)
+   {
+      wpts.push([corners[i][0], corners[i][1], time_side[i%2], 0]);
+      waypoints.push(wpts[i]);
+      wpxs.push(feetToPixels(corners[i][0]) + CENTER_X);
+      wpxs.push(-feetToPixels(corners[i][1]) + CENTER_Y);
+
+      if(DEBUG == true)
+      {
+         console.log("Corner " + i + " " + wpxs[(i*2) + 2] + " " + wpxs[(i*2) + 3]);
+      }
+   }
+   
+   if(speedLimit() == false)
+   {
+      return;
+   }
+   
+   var line = new Kinetic.Line({
+      points: wpxs,
+      stroke: 'red',
+      strokeWidth: 5,
+      lineCap: 'round',
+      lineJoin: 'round'
+   });
+   
+   vehicleLayer.add(line);
+   stage.add(vehicleLayer);
+   
+   animatePointExecution(waypoints[0][0], waypoints[0][1], waypoints[0][2], waypoints[0][3]);
+} //end animateRectangle
 
 /* @brief Animate the vehicle given point execution parameters
  * @param x The destination x coordinate
@@ -777,20 +1117,33 @@ function animateMecanum()
 function animatePointExecution(x, y, time, orientation)
 {
    //determine the direction to the end point
-   var whereAmI_x = rect.getPosition().x;
-   var whereAmI_y = rect.getPosition().y;
+   var whereAmI_x = GLOBAL_X + pixelsToFeet(rect.getPosition().x - CENTER_X);
+   var whereAmI_y = -(GLOBAL_Y + pixelsToFeet(rect.getPosition().y - CENTER_Y)); //negate y
 
-   var whereAmIGoing_x = CENTER_X + feetToPixels(x);
-   var whereAmIGoing_y = CENTER_Y - feetToPixels(y);
-
+   var whereAmIGoing_x = pixelsToFeet(feetToPixels(x));
+   var whereAmIGoing_y = pixelsToFeet(feetToPixels(y));
+   
    deltaX = whereAmIGoing_x - whereAmI_x;
-   deltaY = whereAmIGoing_y - whereAmI_y;
+   deltaY = whereAmI_y - whereAmIGoing_y;
+
+   if(DEBUG == true)
+   {
+      console.log("x:" + x);
+      console.log("y:" + y);
+      console.log("whereAmI_x:" + whereAmI_x);
+      console.log("whereAmI_y:" + whereAmI_y);
+      console.log("whereAmIGoing_x:" + whereAmIGoing_x);
+      console.log("whereAmIGoing_y:" + whereAmIGoing_y);
+      console.log("deltaX:" + deltaX);
+      console.log("deltaY:" + deltaY);
+      console.log("time:" + time);
+   }
 
    //determine how the sign of x and y will change
    setSign(deltaX, deltaY);
 
    //set animation variable for time
-   TIME = parseInt(time);
+   TIME = parseFloat(time);
    
    //avoid divide by zero!
    var distance = 0;
@@ -801,13 +1154,15 @@ function animatePointExecution(x, y, time, orientation)
          //there is movement in both x and y direction
          DIRECTION = Math.atan(deltaY/deltaX);
          //use Pythagoras' Theorem to get the distance to travel
-         distance = pixelsToFeet(Math.sqrt(Math.pow(deltaY,2) + Math.pow(deltaX,2)));
+         distance = Math.sqrt(Math.pow(deltaY,2) + Math.pow(deltaX,2));
+         console.log("A");
       }
       else
       {  
          //there is only movement in the x direction
          DIRECTION = 0;
-         distance = pixelsToFeet(deltaX);
+         distance = deltaX;
+         console.log("B");
       }
    }
    else
@@ -815,14 +1170,16 @@ function animatePointExecution(x, y, time, orientation)
       if(deltaY != 0)
       {
          //there is only movement in the y direction
-         DIRECTION = -Math.atan(deltaY/deltaX);
-         distance = pixelsToFeet(deltaY);
+         DIRECTION = Math.atan(deltaY/deltaX);
+         distance = deltaY;
+         console.log("C");
       }
       else
       {  
          //there is no movement
          DIRECTION = 0;
          distance = 0;
+         console.log("D");
       }
    }
 
@@ -833,6 +1190,7 @@ function animatePointExecution(x, y, time, orientation)
    }
    else
    {
+      console.log("TIME is zero!!!!!");
       SPEED = 0;
    }
    
@@ -869,7 +1227,7 @@ function speedLimit()
 {
    if(SPEED > MAX_SPEED)
    {
-      alert("The vehicle would have to travel at " + SPEED.toFixed(NUM_DEC_PLACES) + " ft/sec in order to get to the end point in " + TIME + " seconds. Unfortunately, the max speed of the vehicle is " + MAX_SPEED.toFixed(NUM_DEC_PLACES) + " ft/sec. Try again.");
+      alert("The vehicle would travel at " + SPEED.toFixed(NUM_DEC_PLACES) + " ft/sec given the configuration that you entered. Unfortunately, the max speed of the vehicle is " + MAX_SPEED.toFixed(NUM_DEC_PLACES) + " ft/sec. Try again.");
       document.getElementById("state").innerHTML="Invalid Input";      
       return false;
    }
@@ -887,40 +1245,49 @@ function speedLimit()
  */
 function setSign(deltaX, deltaY)
 {
-   //4th quadrant
-   if(deltaY > 0 && deltaX > 0)
-   {
-      X_MULT = 1;
+  //1st quadrant
+  if(deltaY > 0 && deltaX > 0)
+  {
+     X_MULT = 1;
+     Y_MULT = 1;
+  }
+  //2nd quadrant
+  else if(deltaY > 0 && deltaX < 0)
+  {
+     X_MULT = -1;
+     Y_MULT = -1;
+  }
+  //3rd quadrant
+  else if(deltaY < 0 && deltaX < 0)
+  {
+     X_MULT = -1;
+     Y_MULT = -1;
+  }
+  //4th quadrant
+  else if(deltaY < 0 && deltaX > 0)
+  {
+     X_MULT = 1;
+     Y_MULT = 1;
+  }
+  else
+  {
       Y_MULT = 1;
-   }
-   //3rd quadrant
-   else if(deltaY > 0 && deltaX < 0)
-   {
-      X_MULT = -1;
-      Y_MULT = -1;
-   }
-   //2nd quadrant
-   else if(deltaY < 0 && deltaX < 0)
-   {
-      X_MULT = -1;
-      Y_MULT = -1;
-   }
-   //1st quadrant
-   else if(deltaY < 0 && deltaX > 0)
-   {
-      X_MULT = 1;
-      Y_MULT = 1;
-   }
-   else
-   {
-      X_MULT = 1;
-      Y_MULT = -1;
-      
-      if(deltaX < 0)
+      if(deltaX == 0)
       {
-         X_MULT = -1;
+         X_MULT = 1;
       }
-   }
+      else if(deltaY == 0)
+      {
+         if(deltaX < 0)
+         {
+            X_MULT = -1;
+         }
+      }
+      else
+      {
+         //impossible
+      }
+  }
 }
 
 /* @brief Reposition viewable area when vehicle reference point travels within
@@ -1029,6 +1396,16 @@ function reset()
    CANVAS_Y = 0;
    X_MULT = 1;
    Y_MULT = 1;
+   CIRCLE_RADIUS = 0;
+   INCLINATION = 0;
+   RECT_W = 0;
+   RECT_H = 0;
+   
+   animating = false;
+   document.getElementById("state").innerHTML="Not Animating";
+   anim.stop();
+   animCircle.stop();
+   animPointExecution.stop();
    
    //delete waypoint rows
    for(var i = 0; i < waypoints.length; i++)

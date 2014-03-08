@@ -61,13 +61,15 @@
             <h4>Circle</h4>
             <label>Radius (ft):</label><input type="text" name="circle_rad" id="circle_rad"><br>
             <label>Inclination (deg):</label><input type="text" name="circle_inc" id="circle_inc"><br>
-            <button id="button" onclick="mecanumExecution()">Go</button>
+            <label>Time (sec):</label><input type="text" name="circle_sec" id="circle_sec"><br>
+            <button id="button" onclick="circleExecution()">Go</button>
             <button onclick="reset()">Reset</button>
             <h4>Rectangle</h4>
             <label>Width (ft):</label><input type="text" name="rect_w" id="rect_w"><br>
             <label>Height (ft):</label><input type="text" name="rect_h" id="rect_h"><br>
             <label>Inclination (deg):</label><input type="text" name="rect_inc" id="rect_inc"><br>
-            <button id="button" onclick="mecanumExecution()">Go</button>
+            <label>Time (sec):</label><input type="text" name="rect_sec" id="rect_sec"><br>
+            <button id="button" onclick="rectangleExecution()">Go</button>
             <button onclick="reset()">Reset</button>
             <h4>Figure 8</h4>
             <label>Radius 1 (ft):</label><input type="text" name="fig8_1_rad" id="fig8_1_rad"><br>
@@ -81,15 +83,16 @@
       <div>
          <h3 class="static">Animation Information</h3>
          <table border="1">
-            <tr><td>State:</td><td id="state" colspan="2">Not Animating</td></tr>
-            <tr><td>Time:</td><td id="cur_time">0.00</td><td>sec</td></tr>
+            <tr><td><b>State:</b></td><td id="state" colspan="2">Not Animating</td></tr>
+            <tr><td><b>Time:</b></td><td id="cur_time">0.00</td><td>sec</td></tr>
          </table>
          <h3 class="static">Vehicle Information</h3>
          <table border="1">
-            <tr><td>X:</td><td id="x_coord">0.00</td><td>ft</td></tr>
-            <tr><td>Y:</td><td id="y_coord">0.00</td><td>ft</td></tr>
-            <tr><td>Speed:</td><td id="cur_speed">0.00</td><td>ft/sec</td></tr>
-            <tr><td>Rotation:</td><td id="cur_rot">0.00</td><td>deg</td></tr>
+            <tr><td><b>X:</b></td><td id="x_coord">0.00</td><td>ft</td></tr>
+            <tr><td><b>Y:</b></td><td id="y_coord">0.00</td><td>ft</td></tr>
+            <tr><td><b>Speed:</b></td><td id="cur_speed">0.00</td><td>ft/sec</td></tr>
+            <tr><td><b>Rotation:</b></td><td id="cur_rot">0.00</td><td>deg</td></tr>
+            <tr><td><b>Wheel Radius:</b></td><td id="wheel_rad">0.25</td><td>ft</td></tr>
          </table>
          <button onclick="reload()">Reload Page</button>
       </div>
