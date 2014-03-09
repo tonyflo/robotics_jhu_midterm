@@ -226,7 +226,7 @@ if(DEBUG)
 var frames = 0; //number of frames executed
 var NEW_POINT = 3; //draw new point
 var recentered = true; //toggle to detect when view was recentered
-var PATH_LEN = 1000; //length of path to be executed
+var PATH_LEN = 1000000; //length of path to be executed
 var pathx = 0;
 var pathy = 0;
 
@@ -269,8 +269,8 @@ function drawPathToBeExec(dir, speed)
             lineJoin: 'round'
          });
 
-         pathLayer.add(toBeExecuted);
-         pathLayer.draw();
+         waypointLayer.add(toBeExecuted);
+         waypointLayer.draw();
          
          recentered = false;
       }
@@ -333,9 +333,6 @@ var anim = new Kinetic.Animation(function(frame)
    //move the vehicle
    rect.setX(newX);
    rect.setY(newY);
-   
-   //draw path to be executed
-   drawPathToBeExec(DIRECTION, SPEED);
       
    //draw path traveled
    if(frames > NEW_POINT)
@@ -1023,6 +1020,10 @@ function animate()
    //adjust angles so that vehicle and global coordinate systems line up
    DIRECTION -= 90;
    
+   
+   //draw path to be executed
+   drawPathToBeExec(DIRECTION, SPEED);
+   
    //set state of animation to animating
    animating = "vref";
    anim.start();
@@ -1109,6 +1110,9 @@ function animateMecanum()
    {
       console.log("DIR: " + DIRECTION);
    }
+   
+   //draw path to be executed
+   drawPathToBeExec(DIRECTION, SPEED);
    
    //set state of animation to animating
    animating = "vref";
