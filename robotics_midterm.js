@@ -430,7 +430,7 @@ var animPointExecution = new Kinetic.Animation(function(frame)
    //draw path traveled
    if(frames > NEW_POINT)
    {
-      drawPrevPath(newX, newY);
+      //drawPrevPath(newX, newY);
       frames=0;
    }
    frames++;
@@ -696,7 +696,7 @@ function addWaypoint()
    
    //clear path
    pathLayer.removeChildren();
-   pathLayer.draw;
+   pathLayer.draw();
    
    //add the waypoint to the array of waypoints
    waypoints.push(waypoint);
@@ -1458,11 +1458,13 @@ function repositionView()
    var pathy = pathLayer.getPosition().y - diffy;
    console.log(pathx + " " + pathy);
    
+   console.log("b4: " + pathLayer.x() + " " + pathLayer.y());
    pathLayer.setX(pathx);
    pathLayer.setY(pathy);
+   console.log("af: " + pathLayer.x() + " " + pathLayer.y());
    
    //pathLayer.removeChildren();
-   //pathLayer.draw;
+   pathLayer.draw();
    donePoints = [[CENTER_X, CENTER_Y]];
    recentered = true;
 }
