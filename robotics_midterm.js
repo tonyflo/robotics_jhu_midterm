@@ -227,23 +227,27 @@ var frames = 0; //number of frames executed
 var NEW_POINT = 3; //draw new point
 var recentered = true; //toggle to detect when view was recentered
 var PATH_LEN = 1000; //length of path to be executed
-var donePoints = [[CENTER_X, CENTER_Y]];
+var pathx = 0;
+var pathy = 0;
+
+//path that has been traveled
+var done = new Kinetic.Line({
+   points: [CENTER_X, CENTER_Y, CENTER_X, CENTER_Y],
+   stroke: 'red',
+   strokeWidth: 5,
+   lineCap: 'round',
+   lineJoin: 'round'
+});
 
 /* @brief Draw the path that the vehicle has already traveled
  */
 function drawPrevPath(x, y)
-{  
-   var done = new Kinetic.Line({
-      points: [donePoints[donePoints.length-1][0], donePoints[donePoints.length-1][1], x, y],
-      stroke: 'red',
-      strokeWidth: 5,
-      lineCap: 'round',
-      lineJoin: 'round'
-   });
+{
+   var points = done.getPoints();
+   points[points.length-2]=x - pathx; // new x point 
+   points[points.length-1]=y - pathy; // new y point
+   done.setPoints(points);
    
-   donePoints.push([x,y]);
- 
-   pathLayer.add(done);
    pathLayer.draw();
 }
 
@@ -433,7 +437,7 @@ var animPointExecution = new Kinetic.Animation(function(frame)
    //draw path traveled
    if(frames > NEW_POINT)
    {
-      //drawPrevPath(newX, newY);
+      drawPrevPath(newX, newY);
       frames=0;
    }
    frames++;
@@ -472,6 +476,11 @@ var animPointExecution = new Kinetic.Animation(function(frame)
       if(cur_waypoint < waypoints.length)
       {
          pointExecution(true);
+         
+         var points = done.getPoints();
+         points.push(CENTER_X); // new x point 
+         points.push(CENTER_Y); // new y point
+         done.setPoints(points);
       }
       else
       {
@@ -1457,12 +1466,21 @@ function repositionView()
    rect.setX(CENTER_X);
    rect.setY(CENTER_Y);
    
-   var pathx = waypointLayer.getPosition().x + diffx;
-   var pathy = waypointLayer.getPosition().y - diffy;
+   pathx = waypointLayer.getPosition().x + diffx;
+   pathy = waypointLayer.getPosition().y - diffy;
    console.log(pathx + " " + pathy);
    
    waypointLayer.setX(pathx);
    waypointLayer.setY(pathy);
+   
+   var points = done.getPoints();
+   points.push(CENTER_X); // new x point 
+   points.push(CENTER_Y); // new y point
+   done.setPoints(points);
+   
+   pathLayer.setX(pathx);
+   pathLayer.setY(pathy);
+   pathLayer.draw();
    
    //pathLayer.removeChildren();
    waypointLayer.draw();
@@ -1608,8 +1626,10 @@ imageObj.onload = function() {
     stage.draw();
 }
 drawVehicle();
-stage.add(pathLayer);
 stage.add(waypointLayer);
+
+pathLayer.add(done);
+stage.add(pathLayer);
 
 /****************************
  *
