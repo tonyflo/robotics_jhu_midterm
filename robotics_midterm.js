@@ -223,7 +223,7 @@ if(DEBUG)
  *
  ****************************/
 var frames = 0; //number of frames executed
-var NEW_POINT = 10; //draw new point
+var NEW_POINT = 3; //draw new point
 var recentered = true; //toggle to detect when view was recentered
 var PATH_LEN = 1000; //length of path to be executed
 var donePoints = [[CENTER_X, CENTER_Y]];
@@ -244,6 +244,10 @@ function drawPrevPath(x, y)
    pathLayer.draw();
 }
 
+/* @brief Draw path for vref and mecanum
+ * @param dir Direction in degrees
+ * @param speed Speed in ft / sec
+ */
 function drawPathToBeExec(dir, speed)
 {
    if(recentered == true)
@@ -264,7 +268,39 @@ function drawPathToBeExec(dir, speed)
          recentered = false;
       }
    }
-}
+} //end drawPathToBeExec
+
+/* @brief Draw waypoint path
+ */
+function drawPointsPathToBeExec()
+{
+   var pts = [CENTER_X, CENTER_Y]; //way points as coordinates
+   for(var i = 0; i < waypoints.length; i++)
+   {
+      var x = waypoints[i][0]; 
+      var y = waypoints[i][1];
+      var to = coordFt2Px(x, y); //coordinates
+      var toX = to[0]; //x in px
+      var toY = to[1]; //y in px
+      pts.push(toX);
+      pts.push(toY);
+   }
+   console.log(pts);
+   
+   var toBeExecuted = new Kinetic.Line({
+      points: pts,
+      stroke: 'green',
+      strokeWidth: 4,
+      lineCap: 'round',
+      lineJoin: 'round'
+   });
+   
+   pathLayer.add(toBeExecuted);
+   pathLayer.draw();
+   
+   recentered = false;
+
+} //end drawPointsPathToBeExec
 
 /****************************
  *
@@ -586,6 +622,7 @@ function pointExecution(waypointMode)
 {
    if(animating == "reload")
    {
+      //TODO: this isn't ideal
       alert("Please reload the page to perform another simulation.");
       return;
    }
@@ -662,7 +699,7 @@ function addWaypoint()
    
    //add the waypoint to the array of waypoints
    waypoints.push(waypoint);
-   
+   drawPointsPathToBeExec();
    console.log(waypoint);
 } //end addWaypoint
 
@@ -1418,6 +1455,19 @@ function repositionView()
    donePoints = [[CENTER_X, CENTER_Y]];
    recentered = true;
 }
+
+/* @brief Convert feet x, y to pixels x, y 
+ */
+function coordFt2Px(x, y)
+{
+   var pxX = CENTER_X + feetToPixels(x); 
+   var pxY = CENTER_Y - feetToPixels(y);
+   var px = [];
+   px[0] = pxX;
+   px[1] = pxY;
+   
+   return px;
+} //end coordFt2Px
 
 /* @brief Helper function to convert an angle in degrees to radians
  * @param angle The angle to be converted to radians
