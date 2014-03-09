@@ -1080,7 +1080,7 @@ function animateMecanum()
       if(Vy != 0)
       {
          //there is movement in both x and y direction
-         DIRECTION = -toDegrees(Math.atan(Vy/Vx));
+         DIRECTION = toDegrees(Math.atan(Vy/Vx));
          console.log("A"); //TODO remove
       }
       else
@@ -1095,7 +1095,7 @@ function animateMecanum()
       if(Vy != 0)
       {
          //there is only movement in the y direction
-         DIRECTION = toDegrees(Math.atan(Vy/Vx));
+         DIRECTION = -toDegrees(Math.atan(Vy/Vx));
          console.log("C");
       }
       else
