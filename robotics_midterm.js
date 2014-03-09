@@ -251,6 +251,18 @@ function drawPrevPath(x, y)
    pathLayer.draw();
 }
 
+/* @brief Draw the path that the vehicle has already traveled for a circle
+ */
+function drawPrevPathCircle(x, y)
+{
+   var points = done.getPoints();
+   points.push(x) - pathx; // new x point 
+   points.push(y) - pathy; // new y point
+   done.setPoints(points);
+   
+   pathLayer.draw();
+}
+
 /* @brief Draw path for vref and mecanum
  * @param dir Direction in degrees
  * @param speed Speed in ft / sec
@@ -274,6 +286,38 @@ function drawPathToBeExec(dir, speed)
          
          recentered = false;
       }
+   }
+} //end drawPathToBeExec
+
+
+/* @brief Draw path for vref and mecanum
+ * @param rad Radius of circle in feet
+ * @param inc Inclination of radius in degrees
+ */
+function drawPathToBeExecCircle(rad, inc)
+{
+   if(recentered == true)
+   {
+   //   if(speed > 0)
+   //   {
+   
+         var circle = new Kinetic.Circle({
+           x: CENTER_X,
+           y: CENTER_Y,
+           radius: rad,
+           stroke: 'green',
+           strokeWidth: 2
+         });
+         
+         inc += 180; //realign coordinate systems
+         circle.setX(Math.sin(toRadians(inc)) * rad + CENTER_X);
+         circle.setY(-Math.cos(toRadians(inc)) * rad + CENTER_Y);
+
+         waypointLayer.add(circle);
+         waypointLayer.draw();
+         
+         recentered = false;
+   //   }
    }
 } //end drawPathToBeExec
 
@@ -375,7 +419,6 @@ var animCircle = new Kinetic.Animation(function(frame)
    
    //set direction based on time
    DIRECTION += (frame.timeDiff * (360/TIME)) / SECOND_MS;
-   console.log(DIRECTION);
    
    //determine x component of speed value
    var speedX = feetToPixels(SPEED) * Math.cos(toRadians(DIRECTION));
@@ -388,6 +431,14 @@ var animCircle = new Kinetic.Animation(function(frame)
    //move the vehicle
    rect.setX(newX);
    rect.setY(newY);
+   
+   //draw path traveled
+   if(frames > NEW_POINT)
+   {
+      drawPrevPathCircle(newX, newY);
+      frames=0;
+   }
+   frames++;
    
    //update global vehicle coordinates
    CANVAS_X = pixelsToFeet(newX - CENTER_X);
@@ -1020,7 +1071,6 @@ function animate()
    //adjust angles so that vehicle and global coordinate systems line up
    DIRECTION -= 90;
    
-   
    //draw path to be executed
    drawPathToBeExec(DIRECTION, SPEED);
    
@@ -1124,7 +1174,7 @@ function animateCircle()
    CIRCLE_RADIUS = document.getElementById("circle_rad").value;
    INCLINATION = document.getElementById("circle_inc").value;
    TIME = document.getElementById("circle_sec").value;
-   DIRECTION = parseFloat(INCLINATION);
+   DIRECTION = parseFloat(INCLINATION) -180; //adjust direction to align with vehicle coordinate system
    
    //calculated distance and speed
    var circumference = 2 * Math.PI * CIRCLE_RADIUS;
@@ -1138,6 +1188,9 @@ function animateCircle()
       console.log("SPEED: " + SPEED);
       console.log("circumference: " + circumference);
    }
+   
+   //draw path to be executed
+   drawPathToBeExecCircle(feetToPixels(CIRCLE_RADIUS), DIRECTION);
    
    if(speedLimit() == true)
    {
