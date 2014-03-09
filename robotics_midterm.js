@@ -234,7 +234,7 @@ var pathy = 0;
 var done = new Kinetic.Line({
    points: [CENTER_X, CENTER_Y, CENTER_X, CENTER_Y],
    stroke: 'red',
-   strokeWidth: 5,
+   strokeWidth: 2,
    lineCap: 'round',
    lineJoin: 'round'
 });
@@ -264,7 +264,7 @@ function drawPathToBeExec(dir, speed)
          var toBeExecuted = new Kinetic.Line({
             points: [CENTER_X, CENTER_Y, CENTER_X + (PATH_LEN * Math.cos(toRadians(dir))), CENTER_Y + (PATH_LEN * Math.sin(toRadians(dir)))],
             stroke: 'green',
-            strokeWidth: 4,
+            strokeWidth: 2,
             lineCap: 'round',
             lineJoin: 'round'
          });
@@ -297,7 +297,7 @@ function drawPointsPathToBeExec()
    var toBeExecuted = new Kinetic.Line({
       points: pts,
       stroke: 'green',
-      strokeWidth: 4,
+      strokeWidth: 2,
       lineCap: 'round',
       lineJoin: 'round'
    });
@@ -475,8 +475,8 @@ var animPointExecution = new Kinetic.Animation(function(frame)
          pointExecution(true);
          
          var points = done.getPoints();
-         points.push(CENTER_X); // new x point 
-         points.push(CENTER_Y); // new y point
+         points.push(newX); // new x point 
+         points.push(newY); // new y point
          done.setPoints(points);
       }
       else
@@ -1224,7 +1224,7 @@ function animateRectangle()
    var line = new Kinetic.Line({
       points: wpxs, //
       stroke: 'red',
-      strokeWidth: 5,
+      strokeWidth: 2,
       lineCap: 'round',
       lineJoin: 'round'
    });
@@ -1478,8 +1478,8 @@ function repositionView()
    waypointLayer.setY(pathy);
    
    var points = done.getPoints();
-   points.push(CENTER_X); // new x point 
-   points.push(CENTER_Y); // new y point
+   points.push(CENTER_X - pathx); // new x point 
+   points.push(CENTER_Y - pathy); // new y point
    done.setPoints(points);
    
    pathLayer.setX(pathx);
