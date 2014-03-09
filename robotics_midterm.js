@@ -137,7 +137,8 @@ var stage = new Kinetic.Stage({
 
 //the layer of the vehicle
 var vehicleLayer = new Kinetic.Layer();
-var pathLayer = new Kinetic.Layer(); 
+var pathLayer = new Kinetic.Layer();
+var waypointLayer = new Kinetic.Layer();
 
 //the vehicle shape
 var rect = new Kinetic.Rect({
@@ -228,6 +229,8 @@ var recentered = true; //toggle to detect when view was recentered
 var PATH_LEN = 1000; //length of path to be executed
 var donePoints = [[CENTER_X, CENTER_Y]];
 
+/* @brief Draw the path that the vehicle has already traveled
+ */
 function drawPrevPath(x, y)
 {  
    var done = new Kinetic.Line({
@@ -295,8 +298,8 @@ function drawPointsPathToBeExec()
       lineJoin: 'round'
    });
    
-   pathLayer.add(toBeExecuted);
-   pathLayer.draw();
+   waypointLayer.add(toBeExecuted);
+   waypointLayer.draw();
    
    recentered = false;
 
@@ -695,8 +698,8 @@ function addWaypoint()
    }
    
    //clear path
-   pathLayer.removeChildren();
-   pathLayer.draw();
+   waypointLayer.removeChildren();
+   waypointLayer.draw();
    
    //add the waypoint to the array of waypoints
    waypoints.push(waypoint);
@@ -1454,17 +1457,15 @@ function repositionView()
    rect.setX(CENTER_X);
    rect.setY(CENTER_Y);
    
-   var pathx = pathLayer.getPosition().x + diffx;
-   var pathy = pathLayer.getPosition().y - diffy;
+   var pathx = waypointLayer.getPosition().x + diffx;
+   var pathy = waypointLayer.getPosition().y - diffy;
    console.log(pathx + " " + pathy);
    
-   console.log("b4: " + pathLayer.x() + " " + pathLayer.y());
-   pathLayer.setX(pathx);
-   pathLayer.setY(pathy);
-   console.log("af: " + pathLayer.x() + " " + pathLayer.y());
+   waypointLayer.setX(pathx);
+   waypointLayer.setY(pathy);
    
    //pathLayer.removeChildren();
-   pathLayer.draw();
+   waypointLayer.draw();
    donePoints = [[CENTER_X, CENTER_Y]];
    recentered = true;
 }
@@ -1608,6 +1609,7 @@ imageObj.onload = function() {
 }
 drawVehicle();
 stage.add(pathLayer);
+stage.add(waypointLayer);
 
 /****************************
  *
