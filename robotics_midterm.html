@@ -62,7 +62,7 @@
             <label>Radius (ft):</label><input type="text" name="circle_rad" id="circle_rad"><br>
             <label>Inclination (deg):</label><input type="text" name="circle_inc" id="circle_inc"><br>
             <label>Time (sec):</label><input type="text" name="circle_sec" id="circle_sec"><br>
-            <button id="button" onclick="circleExecution()">Go</button>
+            <button id="button" onclick="circleExecution(false)">Go</button>
             <button onclick="reset()">Reset</button>
             <h4>Rectangle</h4>
             <label>Width (ft):</label><input type="text" name="rect_w" id="rect_w"><br>
@@ -76,7 +76,8 @@
             <label>Inclination 1 (deg):</label><input type="text" name="fig8_1_inc" id="fig8_1_inc"><br>
             <label>Radius 2 (ft):</label><input type="text" name="fig8_2_rad" id="fig8_2_rad"><br>
             <label>Inclination 2 (deg):</label><input type="text" name="fig8_2_inc" id="fig8_2_inc"><br>
-            <button id="button" onclick="mecanumExecution()">Go</button>
+            <label>Time (sec):</label><input type="text" name="fig8_sec" id="fig8_sec"><br>
+            <button id="button" onclick="circleExecution(true)">Go</button>
             <button onclick="reset()">Reset</button>
          </div>
       </div>

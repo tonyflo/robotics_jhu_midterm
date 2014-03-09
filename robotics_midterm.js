@@ -127,6 +127,8 @@ var CIRCLE_RADIUS = 0;
 var INCLINATION = 0;
 var RECT_W = 0;
 var RECT_H = 0;
+var cur_loop = 0;
+var loops = [];
                            
 //single stage that contains the grid and vehicle
 var stage = new Kinetic.Stage({
@@ -451,6 +453,27 @@ var animCircle = new Kinetic.Animation(function(frame)
 
    //check to see if view needs to be repositioned
    checkRepositionView();
+   
+   //check to see if the vehicle has reached it's destination
+   if(frame.time > (TIME * SECOND_MS))
+   {
+      animPointExecution.stop();
+      animating = "done";
+      document.getElementById("state").innerHTML="Finished, Reload";
+      frame.time = 0;
+      
+      //execute another waypoint if need be
+      cur_loop++;
+      if(cur_loop < loops.length)
+      {
+         circleExecution(true);
+      }
+      else
+      {
+         animating = "reload";
+         animCircle.stop();
+      }
+   }
 
 }, vehicleLayer); //end animCircle
 
@@ -631,20 +654,96 @@ function mecanumExecution()
    }
 } //end mecanumExecution
 
+/*
+   CIRCLE_RADIUS = document.getElementById("fig8_1_rad").value;
+   INCLINATION = document.getElementById("fig8_1_inc").value;
+   CIRCLE_RADIUS2 = document.getElementById("fig8_2_rad").value;
+   INCLINATION2 = document.getElementById("fig8_2_inc").value;
+   TIME = document.getElementById("fig8_sec").value;
+*/
+
 /* @brief Action taken when the Go button is pressed for circle mode
  */
-function circleExecution()
+function circleExecution(figure8Mode)
 {
-   reset();
-
-   if(validateUserInputCircle() == true)
+   if(figure8Mode)
    {
-      animateCircle();
+      var status = true;
+      
+      //validate and add loop data to array
+      if(animating != "done" && animating != "reload")
+      {
+         console.log("here: " + animating);
+         //validate first loop of figure 8
+         CIRCLE_RADIUS = document.getElementById("fig8_1_rad").value;
+         INCLINATION = document.getElementById("fig8_1_inc").value;
+         TIME = document.getElementById("fig8_sec").value; 
+         if(validateUserInputCircle() == true)
+         {
+            //fill in input
+            document.getElementById("fig8_1_rad").value=CIRCLE_RADIUS;
+            document.getElementById("fig8_1_inc").value=INCLINATION;
+            document.getElementById("fig8_sec").value=TIME;
+            loops.push([CIRCLE_RADIUS, INCLINATION]);
+            
+            DIRECTION = parseFloat(INCLINATION) -180; //adjust direction to align with vehicle coordinate system
+            drawPathToBeExecCircle(feetToPixels(CIRCLE_RADIUS), DIRECTION);
+         }
+         else
+         {
+            status = false;
+         }
+         
+         //validate second loop of figure 8
+         CIRCLE_RADIUS = document.getElementById("fig8_2_rad").value;
+         INCLINATION = document.getElementById("fig8_2_inc").value;
+         TIME = document.getElementById("fig8_sec").value; 
+         if(validateUserInputCircle() == true)
+         {
+            //fill in input
+            document.getElementById("fig8_2_rad").value=CIRCLE_RADIUS;
+            document.getElementById("fig8_2_inc").value=INCLINATION;
+            document.getElementById("fig8_sec").value=TIME;
+            loops.push([CIRCLE_RADIUS, INCLINATION]);
+            
+            DIRECTION = parseFloat(INCLINATION) -180; //adjust direction to align with vehicle coordinate system
+            drawPathToBeExecCircle(feetToPixels(CIRCLE_RADIUS), DIRECTION);
+         }
+         else
+         {
+            status = false;
+         }
+      } //end pre animation check
+      
+      if(status == true)
+      {
+         console.log("loop : " + cur_loop);
+         animateCircle(loops[cur_loop][0], loops[cur_loop][1], TIME);
+      }
+
    }
    else
    {
-      document.getElementById("state").innerHTML="Invalid Input";
+      CIRCLE_RADIUS = document.getElementById("circle_rad").value;
+      INCLINATION = document.getElementById("circle_inc").value;
+      TIME = document.getElementById("circle_sec").value;
+      
+      if(validateUserInputCircle() == true)
+      {
+         //fill in input
+         document.getElementById("circle_rad").value=CIRCLE_RADIUS;
+         document.getElementById("circle_inc").value=INCLINATION;
+         document.getElementById("circle_sec").value=TIME;
+         
+         animateCircle(CIRCLE_RADIUS, INCLINATION, TIME);
+      }
+      else
+      {
+         document.getElementById("state").innerHTML="Invalid Input";
+      }
    }
+
+
 } //end circleExecution
 
 /* @brief Action taken when the Go button is pressed for rectangle mode
@@ -830,10 +929,6 @@ function pushAndDrawWaypoint(waypoint)
  {
    var status = new Boolean(1);
    
-   CIRCLE_RADIUS = document.getElementById("circle_rad").value;
-   INCLINATION = document.getElementById("circle_inc").value;
-   TIME = document.getElementById("circle_sec").value;
-   
    //check for numeric input
    if(isNaN(CIRCLE_RADIUS))
    {
@@ -876,14 +971,82 @@ function pushAndDrawWaypoint(waypoint)
    {
       TIME = 0;
    }
-   
-   //fill in input
-   document.getElementById("circle_rad").value=CIRCLE_RADIUS;
-   document.getElementById("circle_inc").value=INCLINATION;
-   document.getElementById("circle_sec").value=TIME;
 
    return status;
  } //end validateUserInputCircle
+ 
+ /* @brief Validate user input for figure 8
+ */
+ function validateUserInputFigure8()
+ {
+    var status = new Boolean(1);
+   
+   CIRCLE_RADIUS = document.getElementById("fig8_1_rad").value;
+   INCLINATION = document.getElementById("fig8_1_inc").value;
+   CIRCLE_RADIUS2 = document.getElementById("fig8_2_rad").value;
+   INCLINATION2 = document.getElementById("fig8_2_inc").value;
+   TIME = document.getElementById("fig8_sec").value;
+   
+   //check for numeric input
+   if(isNaN(CIRCLE_RADIUS) || isNaN(CIRCLE_RADIUS2))
+   {
+      alert("Please enter a valid value for radius)");
+      status = false;
+   }
+   if(isNaN(INCLINATION) || isNaN(INCLINATION2))
+   {
+      alert("Please enter a valid value for inclination");
+      status = false;
+   }
+   if(isNaN(TIME))
+   {
+      alert("Please enter a valid value for time");
+      status = false;
+   }
+   
+   //check negatives
+   if(CIRCLE_RADIUS <= 0 || CIRCLE_RADIUS2 <= 0)
+   {
+      alert("Radius must be positive");
+      status = false;
+   }
+   if(TIME <= 0)
+   {
+      alert("Time must be positive");
+      status = false;
+   }
+   
+   //set defaults
+   if(!CIRCLE_RADIUS)
+   {
+      CIRCLE_RADIUS = 0;
+   }
+   if(!CIRCLE_RADIUS2)
+   {
+      CIRCLE_RADIUS2 = 0;
+   }
+   if(!INCLINATION)
+   {
+      INCLINATION = 0;
+   }
+   if(!INCLINATION2)
+   {
+      INCLINATION2 = 0;
+   }
+   if(!TIME)
+   {
+      TIME = 0;
+   }
+   
+   //fill in input
+   document.getElementById("fig8_1_rad").value = CIRCLE_RADIUS;
+   document.getElementById("fig8_1_inc").value = INCLINATION;
+   document.getElementById("fig8_2_rad").value = CIRCLE_RADIUS2;
+   document.getElementById("fig8_2_inc").value = INCLINATION2;
+   document.getElementById("fig8_sec").value = TIME;
+
+   return status;
+ } //end validateUserInputFigure8
  
  /* @brief Validate user input for circle mode
  */
@@ -1167,13 +1330,13 @@ function animateMecanum()
 
 /* @brief Animate the vehicle in a circle
  */
-function animateCircle()
+function animateCircle(rad, inc, time)
 {
-   CIRCLE_RADIUS = document.getElementById("circle_rad").value;
-   INCLINATION = document.getElementById("circle_inc").value;
-   TIME = document.getElementById("circle_sec").value;
+   CIRCLE_RADIUS = rad;
+   INCLINATION = inc;
+   TIME = time;
    DIRECTION = parseFloat(INCLINATION) -180; //adjust direction to align with vehicle coordinate system
-   
+
    //calculated distance and speed
    var circumference = 2 * Math.PI * CIRCLE_RADIUS;
    SPEED = circumference / TIME;
@@ -1186,9 +1349,6 @@ function animateCircle()
       console.log("SPEED: " + SPEED);
       console.log("circumference: " + circumference);
    }
-   
-   //draw path to be executed
-   drawPathToBeExecCircle(feetToPixels(CIRCLE_RADIUS), DIRECTION);
    
    if(speedLimit() == true)
    {
@@ -1491,15 +1651,12 @@ if(DEBUG)
 
 function repositionView()
 {
-   console.log("Reposition");
-   
    //update the global vehicle reference coordinates
    GLOBAL_X += CANVAS_X;
    GLOBAL_Y += CANVAS_Y;
    
    var diffx = -rect.x() + CENTER_X;
    var diffy = rect.y() - CENTER_Y;
-   console.log(diffx + " " + diffy);
    
    //center the vehicle
    rect.setX(CENTER_X);
@@ -1507,7 +1664,6 @@ function repositionView()
    
    pathx = waypointLayer.getPosition().x + diffx;
    pathy = waypointLayer.getPosition().y - diffy;
-   console.log(pathx + " " + pathy);
    
    waypointLayer.setX(pathx);
    waypointLayer.setY(pathy);
