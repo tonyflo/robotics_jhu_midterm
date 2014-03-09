@@ -1206,7 +1206,7 @@ function animateRectangle()
 {
    RECT_W = document.getElementById("rect_w").value;
    RECT_H = document.getElementById("rect_h").value;
-   INCLINATION = toRadians(document.getElementById("rect_inc").value);
+   INCLINATION = toRadians(document.getElementById("rect_inc").value - 180);
    TIME = document.getElementById("rect_sec").value;
    
     //calculated distance and time per side
@@ -1219,7 +1219,6 @@ function animateRectangle()
    var beta =  toRadians(90) - INCLINATION - theta;
    var alpha = INCLINATION + theta;
 
-   
    if(DEBUG == true)
    {
       console.log("RECT_W: " + RECT_W);
@@ -1236,10 +1235,9 @@ function animateRectangle()
    
    //find diagonal opposite corner coordinates using rotation matrix
    var first_corn_x = CENTER_X + (Math.sin(beta) * feetToPixels(RECT_H));
-   var first_corn_y = CENTER_Y - (Math.cos(beta) * feetToPixels(RECT_H));
-   var diag_op_corn_x = CENTER_X + (Math.cos(INCLINATION) * feetToPixels(hyp));
-   var diag_op_corn_y = CENTER_Y + (Math.sin(INCLINATION) * feetToPixels(hyp));
-   console.log("diag " + diag_op_corn_x + " " + diag_op_corn_y);
+   var first_corn_y = CENTER_Y + (Math.cos(beta) * feetToPixels(RECT_H));
+   var diag_op_corn_x = CENTER_X + (Math.sin(INCLINATION) * feetToPixels(hyp));
+   var diag_op_corn_y = CENTER_Y + (Math.cos(INCLINATION) * feetToPixels(hyp));
    var third_corn_x = CENTER_X + (Math.sin(alpha) * feetToPixels(RECT_W));
    var third_corn_y = CENTER_Y + (Math.cos(alpha) * feetToPixels(RECT_W));;
    
@@ -1251,13 +1249,10 @@ function animateRectangle()
                   coordPx2Ft(CENTER_X, CENTER_Y)
                  ];
 
-   console.log("len: " + corners.length);
+   //construct the waypoint data
    for(var i = 0; i < corners.length; i ++)
    {
       var waypoint = [];
-      //console.log("corners["+i+"][0] (x) = "+corners[i][0]);
-      //console.log("corners["+i+"][1] (y) = "+corners[i][1]);
-      
       waypoint.push(corners[i][0]);  //x
       waypoint.push(corners[i][1]);  //y
       waypoint.push(time_side[i%2]); //time
