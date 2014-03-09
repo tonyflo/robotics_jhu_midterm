@@ -224,7 +224,7 @@ if(DEBUG)
  *
  ****************************/
 var frames = 0; //number of frames executed
-var NEW_POINT = 3; //draw new point
+var NEW_POINT = 1; //draw new point every NEW_POINT frames
 var recentered = true; //toggle to detect when view was recentered
 var PATH_LEN = 1000000; //length of path to be executed
 var pathx = 0;
@@ -234,7 +234,7 @@ var pathy = 0;
 var done = new Kinetic.Line({
    points: [CENTER_X, CENTER_Y, CENTER_X, CENTER_Y],
    stroke: 'red',
-   strokeWidth: 2,
+   strokeWidth: 4,
    lineCap: 'round',
    lineJoin: 'round'
 });
@@ -256,8 +256,8 @@ function drawPrevPath(x, y)
 function drawPrevPathCircle(x, y)
 {
    var points = done.getPoints();
-   points.push(x) - pathx; // new x point 
-   points.push(y) - pathy; // new y point
+   points.push(x - pathx); // new x point 
+   points.push(y - pathy); // new y point
    done.setPoints(points);
    
    pathLayer.draw();
@@ -296,8 +296,8 @@ function drawPathToBeExec(dir, speed)
  */
 function drawPathToBeExecCircle(rad, inc)
 {
-   if(recentered == true)
-   {
+   //if(recentered == true)
+   //{
    //   if(speed > 0)
    //   {
    
@@ -318,7 +318,7 @@ function drawPathToBeExecCircle(rad, inc)
          
          recentered = false;
    //   }
-   }
+   //}
 } //end drawPathToBeExec
 
 /* @brief Draw waypoint path
@@ -379,7 +379,7 @@ var anim = new Kinetic.Animation(function(frame)
    rect.setY(newY);
       
    //draw path traveled
-   if(frames > NEW_POINT)
+   if(frames >= NEW_POINT)
    {
       drawPrevPath(newX, newY);
       frames=0;
@@ -433,7 +433,7 @@ var animCircle = new Kinetic.Animation(function(frame)
    rect.setY(newY);
    
    //draw path traveled
-   if(frames > NEW_POINT)
+   if(frames >= NEW_POINT)
    {
       drawPrevPathCircle(newX, newY);
       frames=0;
@@ -483,7 +483,7 @@ var animPointExecution = new Kinetic.Animation(function(frame)
    rect.setY(newY);
    
    //draw path traveled
-   if(frames > NEW_POINT)
+   if(frames >= NEW_POINT)
    {
       drawPrevPath(newX, newY);
       frames=0;
@@ -1273,7 +1273,7 @@ function animateRectangle()
    var line = new Kinetic.Line({
       points: wpxs, //
       stroke: 'red',
-      strokeWidth: 2,
+      strokeWidth: 4,
       lineCap: 'round',
       lineJoin: 'round'
    });
