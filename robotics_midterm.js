@@ -103,6 +103,7 @@ var Y_MULT = 1; //used to determine which quadrant
 //waypoint variables
 var waypointCols = ["pointX", "pointY", "time", "orientation"];
 var waypoints = [];
+var waypointAnimationData = []; //([ROTATION, SPEED, TIME, DIRECTION]);
 var cur_waypoint = 0;
 var MAX_WAYPOINTS = 3;
 
@@ -244,14 +245,20 @@ function drawPrevPath(x, y)
    pathLayer.draw();
 }
 
-function drawPathToBeExec(dir, speed)
+function drawPathToBeExec(dir, speed, dist)
 {
    if(recentered == true)
    {
-      if(speed > 0)
+      if(speed != 0)
       {
+         //default to infinite path length
+         if(!dist)
+         {
+            dist = PATH_LEN;
+         }
+         
          var toBeExecuted = new Kinetic.Line({
-            points: [CENTER_X, CENTER_Y, CENTER_X + (PATH_LEN * Math.cos(toRadians(dir))), CENTER_Y + (PATH_LEN * Math.sin(toRadians(dir)))],
+            points: [CENTER_X, CENTER_Y, CENTER_X + (feetToPixels(dist) * Math.cos(toRadians(dir))), CENTER_Y + (feetToPixels(dist) * Math.sin(toRadians(dir)))],
             stroke: 'green',
             strokeWidth: 4,
             lineCap: 'round',
@@ -260,8 +267,6 @@ function drawPathToBeExec(dir, speed)
          
          pathLayer.add(toBeExecuted);
          pathLayer.draw();
-         
-         recentered = false;
       }
    }
 }
@@ -293,7 +298,8 @@ var anim = new Kinetic.Animation(function(frame)
    
    //draw path to be executed
    drawPathToBeExec(DIRECTION, SPEED);
-      
+   recentered = false;
+   
    //draw path traveled
    if(frames > NEW_POINT)
    {
@@ -391,9 +397,6 @@ var animPointExecution = new Kinetic.Animation(function(frame)
    rect.setX(newX);
    rect.setY(newY);
    
-   //draw path to be executed
-   drawPathToBeExec(toDegrees(DIRECTION), SPEED);
-   
    //draw path traveled
    if(frames > NEW_POINT)
    {
@@ -430,11 +433,12 @@ var animPointExecution = new Kinetic.Animation(function(frame)
       animating = "done";
       document.getElementById("state").innerHTML="Finished, Reload";
       frame.time = 0;
-      
+   
       //execute another waypoint if need be
       cur_waypoint++;
       if(cur_waypoint < waypoints.length)
       {
+         console.log("next waypoint: " + cur_waypoint);
          pointExecution(true);
       }
       else
@@ -586,23 +590,31 @@ function pointExecution(waypointMode)
 {
    if(animating == "reload")
    {
+      //TODO: this is not ideal
       alert("Please reload the page to perform another simulation.");
       return;
    }
 
-   if(waypointMode == true)
+   //add a single waypoint for true point execution mode (non-waypoint mode)
+   if(waypointMode == false)
    {
-      //animate
-      animatePointExecution(waypoints[cur_waypoint][0], waypoints[cur_waypoint][1], waypoints[cur_waypoint][2], waypoints[cur_waypoint][3]);
+      if(validateWaypoint() == false)
+      {
+         return;
+      }
    }
-   else
-   {
-      //add valid waypoint
-      validateWaypoint();
-      
-      //animate
-      animatePointExecution(waypoints[cur_waypoint][0], waypoints[cur_waypoint][1], waypoints[cur_waypoint][2], waypoints[cur_waypoint][3]);
-   }
+   
+   animatePointExecution(waypoints[cur_waypoint][0], waypoints[cur_waypoint][1], waypoints[cur_waypoint][2], waypoints[cur_waypoint][3]);
+   
+   ROTATION = waypointAnimationData[cur_waypoint][0];
+   SPEED = waypointAnimationData[cur_waypoint][1];
+   TIME = waypointAnimationData[cur_waypoint][2];
+   DIRECTION = waypointAnimationData[cur_waypoint][3];
+
+   animating = true;
+   animPointExecution.start();
+   document.getElementById("state").innerHTML="Animating Point Execution";
+   document.getElementById("cur_speed").innerHTML=(SPEED).toFixed(NUM_DEC_PLACES);
 } //end pointExecution
 
 /* @brief Validate waypoint
@@ -617,10 +629,18 @@ function validateWaypoint()
       Y = document.getElementById('pointY').value;
       TIME = document.getElementById('time').value;
       ORIENTATION = document.getElementById('orientation').value;
-      
+
       if(validateUserInputPointExecution() == true)
       {
          addWaypoint();
+         
+         var index = waypointAnimationData.length-1;
+         var dirDeg = toDegrees(waypointAnimationData[index][3]);
+         var speed = waypointAnimationData[index][1];
+         var time = waypointAnimationData[index][2];
+         var dist = speed * time;
+         
+         drawPathToBeExec(dirDeg, speed, dist);
          return true;
       }
       else
@@ -662,6 +682,9 @@ function addWaypoint()
    
    //add the waypoint to the array of waypoints
    waypoints.push(waypoint);
+   
+   //collect animation data for waypoint
+   animatePointExecution(waypoints[waypoints.length-1][0], waypoints[waypoints.length-1][1], waypoints[waypoints.length-1][2], waypoints[waypoints.length-1][3]);
    
    console.log(waypoint);
 } //end addWaypoint
@@ -1290,10 +1313,7 @@ function animatePointExecution(x, y, time, orientation)
    
    if(speedLimit() == true)
    {
-      animating = true;
-      animPointExecution.start();
-      document.getElementById("state").innerHTML="Animating Point Execution";
-      document.getElementById("cur_speed").innerHTML=(SPEED).toFixed(NUM_DEC_PLACES);
+      waypointAnimationData.push([ROTATION, SPEED, TIME, DIRECTION]);
    }
 } //end animatePointexecution
 
