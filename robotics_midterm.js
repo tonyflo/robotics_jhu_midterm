@@ -136,7 +136,8 @@ var stage = new Kinetic.Stage({
 });
 
 //the layer of the vehicle
-var vehicleLayer = new Kinetic.Layer(); 
+var vehicleLayer = new Kinetic.Layer();
+var pathLayer = new Kinetic.Layer(); 
 
 //the vehicle shape
 var rect = new Kinetic.Rect({
@@ -218,10 +219,59 @@ if(DEBUG)
 
 /****************************
  *
+ * Paths
+ *
+ ****************************/
+var frames = 0; //number of frames executed
+var NEW_POINT = 10; //draw new point
+var recentered = true; //toggle to detect when view was recentered
+var PATH_LEN = 1000; //length of path to be executed
+var donePoints = [[CENTER_X, CENTER_Y]];
+
+function drawPrevPath(x, y)
+{  
+   var done = new Kinetic.Line({
+      points: [donePoints[donePoints.length-1][0], donePoints[donePoints.length-1][1], x, y],
+      stroke: 'red',
+      strokeWidth: 5,
+      lineCap: 'round',
+      lineJoin: 'round'
+   });
+   
+   donePoints.push([x,y]);
+ 
+   pathLayer.add(done);
+   pathLayer.draw();
+}
+
+function drawPathToBeExec(dir, speed)
+{
+   if(recentered == true)
+   {
+      if(speed > 0)
+      {
+         var toBeExecuted = new Kinetic.Line({
+            points: [CENTER_X, CENTER_Y, CENTER_X + (PATH_LEN * Math.cos(toRadians(dir))), CENTER_Y + (PATH_LEN * Math.sin(toRadians(dir)))],
+            stroke: 'green',
+            strokeWidth: 4,
+            lineCap: 'round',
+            lineJoin: 'round'
+         });
+         
+         pathLayer.add(toBeExecuted);
+         pathLayer.draw();
+         
+         recentered = false;
+      }
+   }
+}
+
+/****************************
+ *
  * Animations
  *
  ****************************/
-
+ 
 /* @brief The main animation object that moves the vehicle reference point
  */
 var anim = new Kinetic.Animation(function(frame) 
@@ -240,6 +290,17 @@ var anim = new Kinetic.Animation(function(frame)
    //move the vehicle
    rect.setX(newX);
    rect.setY(newY);
+   
+   //draw path to be executed
+   drawPathToBeExec(DIRECTION, SPEED);
+      
+   //draw path traveled
+   if(frames > NEW_POINT)
+   {
+      drawPrevPath(newX, newY);
+      frames=0;
+   }
+   frames++;
    
    //update global vehicle coordinates
    CANVAS_X = pixelsToFeet(newX - CENTER_X);
@@ -329,6 +390,17 @@ var animPointExecution = new Kinetic.Animation(function(frame)
    //move the vehicle
    rect.setX(newX);
    rect.setY(newY);
+   
+   //draw path to be executed
+   drawPathToBeExec(toDegrees(DIRECTION), SPEED);
+   
+   //draw path traveled
+   if(frames > NEW_POINT)
+   {
+      drawPrevPath(newX, newY);
+      frames=0;
+   }
+   frames++;
    
    //update global vehicle coordinates
    CANVAS_X = pixelsToFeet(newX - CENTER_X);
@@ -1106,7 +1178,7 @@ function animateRectangle()
    vehicleLayer.add(line);
    stage.add(vehicleLayer);
    
-   //animatePointExecution(waypoints[0][0], waypoints[0][1], waypoints[0][2], waypoints[0][3]);
+   //TODO animatePointExecution(waypoints[0][0], waypoints[0][1], waypoints[0][2], waypoints[0][3]);
 } //end animateRectangle
 
 /* @brief Animate the vehicle given point execution parameters
@@ -1330,6 +1402,8 @@ if(DEBUG)
 
 function repositionView()
 {
+   console.log("Reposition");
+   
    //update the global vehicle reference coordinates
    GLOBAL_X += CANVAS_X;
    GLOBAL_Y += CANVAS_Y;
@@ -1337,6 +1411,12 @@ function repositionView()
    //center the vehicle
    rect.setX(CENTER_X);
    rect.setY(CENTER_Y);
+   
+   //clear path
+   pathLayer.removeChildren();
+   pathLayer.draw;
+   donePoints = [[CENTER_X, CENTER_Y]];
+   recentered = true;
 }
 
 /* @brief Helper function to convert an angle in degrees to radians
@@ -1402,6 +1482,9 @@ function reset()
    INCLINATION = 0;
    RECT_W = 0;
    RECT_H = 0;
+   recentered = true;
+   frames = 0; //number of frames executed
+   donePoints = [[CENTER_X, CENTER_Y]];
    
    animating = false;
    document.getElementById("state").innerHTML="Not Animating";
@@ -1461,6 +1544,7 @@ imageObj.onload = function() {
     stage.draw();
 }
 drawVehicle();
+stage.add(pathLayer);
 
 /****************************
  *
