@@ -1081,13 +1081,11 @@ function animateMecanum()
       {
          //there is movement in both x and y direction
          DIRECTION = toDegrees(Math.atan(Vy/Vx));
-         console.log("A"); //TODO remove
       }
       else
       {
          //there is only movement in the x direction
          DIRECTION = 0;
-         console.log("B");
       }
    }
    else
@@ -1096,13 +1094,11 @@ function animateMecanum()
       {
          //there is only movement in the y direction
          DIRECTION = -toDegrees(Math.atan(Vy/Vx));
-         console.log("C");
       }
       else
       {
          //there is no movement
          DIRECTION = 0;
-         console.log("D");
       }
    }
    
@@ -1248,8 +1244,8 @@ function animatePointExecution(x, y, time, orientation)
    var whereAmI_x = GLOBAL_X + pixelsToFeet(rect.getPosition().x - CENTER_X);
    var whereAmI_y = -(GLOBAL_Y + pixelsToFeet(rect.getPosition().y - CENTER_Y)); //negate y
 
-   var whereAmIGoing_x = pixelsToFeet(feetToPixels(x));
-   var whereAmIGoing_y = pixelsToFeet(feetToPixels(y));
+   var whereAmIGoing_x = x;
+   var whereAmIGoing_y = y;
    
    deltaX = whereAmIGoing_x - whereAmI_x;
    deltaY = whereAmI_y - whereAmIGoing_y;
