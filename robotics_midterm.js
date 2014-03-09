@@ -261,7 +261,7 @@ function drawPathToBeExec(dir, speed)
             lineCap: 'round',
             lineJoin: 'round'
          });
-         
+
          pathLayer.add(toBeExecuted);
          pathLayer.draw();
          
@@ -426,9 +426,6 @@ var animPointExecution = new Kinetic.Animation(function(frame)
    //move the vehicle
    rect.setX(newX);
    rect.setY(newY);
-   
-   //draw path to be executed
-   drawPathToBeExec(toDegrees(DIRECTION), SPEED);
    
    //draw path traveled
    if(frames > NEW_POINT)
@@ -696,6 +693,10 @@ function addWaypoint()
       cell.innerHTML = data;
       waypoint.push(data);
    }
+   
+   //clear path
+   pathLayer.removeChildren();
+   pathLayer.draw;
    
    //add the waypoint to the array of waypoints
    waypoints.push(waypoint);
@@ -1445,13 +1446,23 @@ function repositionView()
    GLOBAL_X += CANVAS_X;
    GLOBAL_Y += CANVAS_Y;
    
+   var diffx = -rect.x() + CENTER_X;
+   var diffy = rect.y() - CENTER_Y;
+   console.log(diffx + " " + diffy);
+   
    //center the vehicle
    rect.setX(CENTER_X);
    rect.setY(CENTER_Y);
    
-   //clear path
-   pathLayer.removeChildren();
-   pathLayer.draw;
+   var pathx = pathLayer.getPosition().x + diffx;
+   var pathy = pathLayer.getPosition().y - diffy;
+   console.log(pathx + " " + pathy);
+   
+   pathLayer.setX(pathx);
+   pathLayer.setY(pathy);
+   
+   //pathLayer.removeChildren();
+   //pathLayer.draw;
    donePoints = [[CENTER_X, CENTER_Y]];
    recentered = true;
 }
