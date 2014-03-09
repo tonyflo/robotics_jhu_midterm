@@ -234,7 +234,7 @@ var pathy = 0;
 var done = new Kinetic.Line({
    points: [CENTER_X, CENTER_Y, CENTER_X, CENTER_Y],
    stroke: 'red',
-   strokeWidth: 4,
+   strokeWidth: 6,
    lineCap: 'round',
    lineJoin: 'round'
 });
@@ -276,7 +276,7 @@ function drawPathToBeExec(dir, speed)
          var toBeExecuted = new Kinetic.Line({
             points: [CENTER_X, CENTER_Y, CENTER_X + (PATH_LEN * Math.cos(toRadians(dir))), CENTER_Y + (PATH_LEN * Math.sin(toRadians(dir)))],
             stroke: 'green',
-            strokeWidth: 2,
+            strokeWidth: 1,
             lineCap: 'round',
             lineJoin: 'round'
          });
@@ -296,29 +296,20 @@ function drawPathToBeExec(dir, speed)
  */
 function drawPathToBeExecCircle(rad, inc)
 {
-   //if(recentered == true)
-   //{
-   //   if(speed > 0)
-   //   {
+   var circle = new Kinetic.Circle({
+     x: CENTER_X,
+     y: CENTER_Y,
+     radius: rad,
+     stroke: 'green',
+     strokeWidth: 1
+   });
    
-         var circle = new Kinetic.Circle({
-           x: CENTER_X,
-           y: CENTER_Y,
-           radius: rad,
-           stroke: 'green',
-           strokeWidth: 2
-         });
-         
-         inc += 180; //realign coordinate systems
-         circle.setX(Math.sin(toRadians(inc)) * rad + CENTER_X);
-         circle.setY(-Math.cos(toRadians(inc)) * rad + CENTER_Y);
+   inc += 180; //realign coordinate systems
+   circle.setX(Math.sin(toRadians(inc)) * rad + CENTER_X);
+   circle.setY(-Math.cos(toRadians(inc)) * rad + CENTER_Y);
 
-         waypointLayer.add(circle);
-         waypointLayer.draw();
-         
-         recentered = false;
-   //   }
-   //}
+   waypointLayer.add(circle);
+   waypointLayer.draw();
 } //end drawPathToBeExec
 
 /* @brief Draw waypoint path
@@ -336,12 +327,12 @@ function drawPointsPathToBeExec()
       pts.push(toX);
       pts.push(toY);
    }
-   console.log(pts);
+   console.log("Points: " + pts);
    
    var toBeExecuted = new Kinetic.Line({
       points: pts,
       stroke: 'green',
-      strokeWidth: 2,
+      strokeWidth: 1,
       lineCap: 'round',
       lineJoin: 'round'
    });
@@ -754,6 +745,13 @@ function addWaypoint()
       waypoint.push(data);
    }
    
+   pushAndDrawWaypoint(waypoint);
+} //end addWaypoint
+
+/* @brief Push the waypoint to the array and draw it on the screen
+ */
+function pushAndDrawWaypoint(waypoint)
+{
    //clear path
    waypointLayer.removeChildren();
    waypointLayer.draw();
@@ -761,8 +759,8 @@ function addWaypoint()
    //add the waypoint to the array of waypoints
    waypoints.push(waypoint);
    drawPointsPathToBeExec();
-   console.log(waypoint);
-} //end addWaypoint
+   console.log("Waypoint data: " + waypoint);
+}
 
 /* @brief Validate user input
  * @param direction The value that the user entered for direction
@@ -1241,47 +1239,39 @@ function animateRectangle()
    var first_corn_y = CENTER_Y - (Math.cos(beta) * feetToPixels(RECT_H));
    var diag_op_corn_x = CENTER_X + (Math.cos(INCLINATION) * feetToPixels(hyp));
    var diag_op_corn_y = CENTER_Y + (Math.sin(INCLINATION) * feetToPixels(hyp));
+   console.log("diag " + diag_op_corn_x + " " + diag_op_corn_y);
    var third_corn_x = CENTER_X + (Math.sin(alpha) * feetToPixels(RECT_W));
    var third_corn_y = CENTER_Y + (Math.cos(alpha) * feetToPixels(RECT_W));;
    
-   var corners = [[first_corn_x, first_corn_y], 
-                  [diag_op_corn_x, diag_op_corn_y],
-                  [third_corn_x, third_corn_y],
-                  [CENTER_X, CENTER_Y]];
-   
-   var wpts = []; //rectangle corners in feet
-   var wpxs = [CENTER_X, CENTER_Y]; //rectangle corners in pixels
-   
-   for(var i = 0; i < 4; i ++)
-   {
-      wpts.push([corners[i][0], corners[i][1], time_side[i%2], 0]);
-      waypoints.push(wpts[i]);
-      wpxs.push(corners[i][0]);
-      wpxs.push(corners[i][1]);
+   //pixel coordinates   
+   var corners = [
+                  coordPx2Ft(first_corn_x, first_corn_y), 
+                  coordPx2Ft(diag_op_corn_x, diag_op_corn_y),
+                  coordPx2Ft(third_corn_x, third_corn_y),
+                  coordPx2Ft(CENTER_X, CENTER_Y)
+                 ];
 
-      if(DEBUG == true)
-      {
-         console.log("Corner " + i + " " + wpxs[(i*2) + 2] + " " + wpxs[(i*2) + 3]);
-      }
+   console.log("len: " + corners.length);
+   for(var i = 0; i < corners.length; i ++)
+   {
+      var waypoint = [];
+      //console.log("corners["+i+"][0] (x) = "+corners[i][0]);
+      //console.log("corners["+i+"][1] (y) = "+corners[i][1]);
+      
+      waypoint.push(corners[i][0]);  //x
+      waypoint.push(corners[i][1]);  //y
+      waypoint.push(time_side[i%2]); //time
+      waypoint.push(0);              //orientation
+
+      pushAndDrawWaypoint(waypoint);
    }
    
    if(speedLimit() == false)
    {
       return;
    }
-   
-   var line = new Kinetic.Line({
-      points: wpxs, //
-      stroke: 'red',
-      strokeWidth: 4,
-      lineCap: 'round',
-      lineJoin: 'round'
-   });
-   
-   vehicleLayer.add(line);
-   stage.add(vehicleLayer);
-   
-   //TODO animatePointExecution(waypoints[0][0], waypoints[0][1], waypoints[0][2], waypoints[0][3]);
+
+   animatePointExecution(waypoints[0][0], waypoints[0][1], waypoints[0][2], waypoints[0][3]);
 } //end animateRectangle
 
 /* @brief Animate the vehicle given point execution parameters
@@ -1293,6 +1283,7 @@ function animateRectangle()
  */
 function animatePointExecution(x, y, time, orientation)
 {
+   console.log("here....");
    //determine the direction to the end point
    var whereAmI_x = GLOBAL_X + pixelsToFeet(rect.getPosition().x - CENTER_X);
    var whereAmI_y = -(GLOBAL_Y + pixelsToFeet(rect.getPosition().y - CENTER_Y)); //negate y
@@ -1553,6 +1544,19 @@ function coordFt2Px(x, y)
    
    return px;
 } //end coordFt2Px
+
+/* @brief Convert pixels x, y to feet x, y 
+ */
+function coordPx2Ft(x, y)
+{
+   var ftX = pixelsToFeet(CENTER_X) - pixelsToFeet(x); 
+   var ftY = pixelsToFeet(CENTER_Y) - pixelsToFeet(y);
+   var ft = [];
+   ft[0] = ftX;
+   ft[1] = ftY;
+   
+   return ft;
+} //end coordPx2Ft
 
 /* @brief Helper function to convert an angle in degrees to radians
  * @param angle The angle to be converted to radians
