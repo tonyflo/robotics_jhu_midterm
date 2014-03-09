@@ -1033,44 +1033,46 @@ function animateRectangle()
 {
    RECT_W = document.getElementById("rect_w").value;
    RECT_H = document.getElementById("rect_h").value;
-   INCLINATION = document.getElementById("rect_inc").value;
+   INCLINATION = toRadians(document.getElementById("rect_inc").value);
    TIME = document.getElementById("rect_sec").value;
    
     //calculated distance and time per side
    var distance = (RECT_W * 2) + (RECT_H * 2);
    var time_side = [(RECT_H/distance)*TIME, (RECT_W/distance)*TIME]; //height, width
    
+   //trig
+   var hyp = Math.sqrt(Math.pow(RECT_W,2) + Math.pow(RECT_H,2)); //hypotenuse of rectangle
+   var theta = Math.atan(RECT_W/RECT_H);
+   var beta =  toRadians(90) - INCLINATION - theta;
+   var alpha = INCLINATION + theta;
+
+   
    if(DEBUG == true)
    {
       console.log("RECT_W: " + RECT_W);
       console.log("RECT_H: " + RECT_H);
-      console.log("INCLINATION (rad): " + toRadians(INCLINATION));
+      console.log("INCLINATION (rad): " + INCLINATION);
       console.log("TIME: " + TIME);
       console.log("time_w: " + time_side[0]);
       console.log("time_h: " + time_side[1]);
       console.log("distance: " + distance);
+      console.log("theta: " + theta);
+      console.log("beta: " + beta);
+      console.log("alpha: " + alpha);
    }
    
-   //trig
-   var hyp = Math.sqrt(Math.pow(RECT_W,2) + Math.pow(RECT_H,2)); //hypotenuse of rectangle
-   var theta = Math.atan(RECT_W/RECT_H);
-   var j = toRadians(90) - toRadians(INCLINATION) - theta;
-   var k = toRadians(90) - j;
-   var a = theta + j;
+   //find diagonal opposite corner coordinates using rotation matrix
+   var first_corn_x = CENTER_X + (Math.sin(beta) * feetToPixels(RECT_H));
+   var first_corn_y = CENTER_Y - (Math.cos(beta) * feetToPixels(RECT_H));
+   var diag_op_corn_x = CENTER_X + (Math.cos(INCLINATION) * feetToPixels(hyp));
+   var diag_op_corn_y = CENTER_Y + (Math.sin(INCLINATION) * feetToPixels(hyp));
+   var third_corn_x = CENTER_X + (Math.sin(alpha) * feetToPixels(RECT_W));
+   var third_corn_y = CENTER_Y + (Math.cos(alpha) * feetToPixels(RECT_W));;
    
-   if(DEBUG == true)
-   {
-      console.log(hyp);
-      console.log(theta);
-      console.log(j);
-      console.log(k);
-      console.log(a);
-   }
-   
-   var corners = [[RECT_W * Math.cos(k), RECT_H * Math.sin(k)], 
-                  [hyp * Math.cos(a), hyp * Math.sin(a)],
-                  [RECT_W * Math.cos(j), RECT_H * Math.sin(j)],
-                  [0, 0]];
+   var corners = [[first_corn_x, first_corn_y], 
+                  [diag_op_corn_x, diag_op_corn_y],
+                  [third_corn_x, third_corn_y],
+                  [CENTER_X, CENTER_Y]];
    
    var wpts = []; //rectangle corners in feet
    var wpxs = [CENTER_X, CENTER_Y]; //rectangle corners in pixels
@@ -1079,8 +1081,8 @@ function animateRectangle()
    {
       wpts.push([corners[i][0], corners[i][1], time_side[i%2], 0]);
       waypoints.push(wpts[i]);
-      wpxs.push(feetToPixels(corners[i][0]) + CENTER_X);
-      wpxs.push(-feetToPixels(corners[i][1]) + CENTER_Y);
+      wpxs.push(corners[i][0]);
+      wpxs.push(corners[i][1]);
 
       if(DEBUG == true)
       {
@@ -1094,7 +1096,7 @@ function animateRectangle()
    }
    
    var line = new Kinetic.Line({
-      points: wpxs,
+      points: wpxs, //
       stroke: 'red',
       strokeWidth: 5,
       lineCap: 'round',
@@ -1104,7 +1106,7 @@ function animateRectangle()
    vehicleLayer.add(line);
    stage.add(vehicleLayer);
    
-   animatePointExecution(waypoints[0][0], waypoints[0][1], waypoints[0][2], waypoints[0][3]);
+   //animatePointExecution(waypoints[0][0], waypoints[0][1], waypoints[0][2], waypoints[0][3]);
 } //end animateRectangle
 
 /* @brief Animate the vehicle given point execution parameters
