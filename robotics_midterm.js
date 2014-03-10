@@ -666,6 +666,7 @@ function mecanumExecution()
  */
 function circleExecution(figure8Mode)
 {
+   //figure 8 mode
    if(figure8Mode)
    {
       var status = true;
@@ -720,8 +721,8 @@ function circleExecution(figure8Mode)
          console.log("loop : " + cur_loop);
          animateCircle(loops[cur_loop][0], loops[cur_loop][1], TIME);
       }
-
    }
+   //single circle mode
    else
    {
       CIRCLE_RADIUS = document.getElementById("circle_rad").value;
@@ -734,6 +735,10 @@ function circleExecution(figure8Mode)
          document.getElementById("circle_rad").value=CIRCLE_RADIUS;
          document.getElementById("circle_inc").value=INCLINATION;
          document.getElementById("circle_sec").value=TIME;
+         
+         //draw path
+         DIRECTION = parseFloat(INCLINATION) -180; //adjust direction to align with vehicle coordinate system
+         drawPathToBeExecCircle(feetToPixels(CIRCLE_RADIUS), DIRECTION);
          
          animateCircle(CIRCLE_RADIUS, INCLINATION, TIME);
       }
@@ -1375,9 +1380,10 @@ function animateRectangle()
    
    //trig
    var hyp = Math.sqrt(Math.pow(RECT_W,2) + Math.pow(RECT_H,2)); //hypotenuse of rectangle
-   var theta = Math.atan(RECT_W/RECT_H);
-   var beta =  toRadians(90) - INCLINATION - theta;
+   var theta = Math.atan(RECT_H/RECT_W);
    var alpha = INCLINATION + theta;
+   var omega = Math.atan(RECT_W/RECT_H);
+   var beta =  omega - INCLINATION;
 
    if(DEBUG == true)
    {
@@ -1394,12 +1400,13 @@ function animateRectangle()
    }
    
    //find diagonal opposite corner coordinates using rotation matrix
-   var first_corn_x = CENTER_X + (Math.sin(beta) * feetToPixels(RECT_H));
+   var first_corn_x = CENTER_X - (Math.sin(beta) * feetToPixels(RECT_H));
    var first_corn_y = CENTER_Y + (Math.cos(beta) * feetToPixels(RECT_H));
    var diag_op_corn_x = CENTER_X + (Math.sin(INCLINATION) * feetToPixels(hyp));
    var diag_op_corn_y = CENTER_Y + (Math.cos(INCLINATION) * feetToPixels(hyp));
    var third_corn_x = CENTER_X + (Math.sin(alpha) * feetToPixels(RECT_W));
-   var third_corn_y = CENTER_Y + (Math.cos(alpha) * feetToPixels(RECT_W));;
+   var third_corn_y = CENTER_Y + (Math.cos(alpha) * feetToPixels(RECT_W));
+
    
    //pixel coordinates   
    var corners = [
