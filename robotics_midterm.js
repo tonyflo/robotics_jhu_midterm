@@ -666,14 +666,6 @@ function mecanumExecution()
    }
 } //end mecanumExecution
 
-/*
-   CIRCLE_RADIUS = document.getElementById("fig8_1_rad").value;
-   INCLINATION = document.getElementById("fig8_1_inc").value;
-   CIRCLE_RADIUS2 = document.getElementById("fig8_2_rad").value;
-   INCLINATION2 = document.getElementById("fig8_2_inc").value;
-   TIME = document.getElementById("fig8_sec").value;
-*/
-
 /* @brief Action taken when the Go button is pressed for circle mode
  */
 function circleExecution(figure8Mode)

@@ -5,7 +5,7 @@
  * Given: 29 Jan 2014
  * Due: 12 Mar 2014
  * File: cookies.js
- * Description: save user input when page is reloaded using cookies
+ * Description: Save user input when page is reloaded using cookies
  */
 
  /****************************
