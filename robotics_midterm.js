@@ -41,7 +41,6 @@ function getBroswerSize()
        BROWSER_WIDTH = document.body.clientWidth;
        BROWSER_HEIGHT = document.body.clientHeight;
    }
-   console.log(BROWSER_WIDTH + " " + BROWSER_HEIGHT);
 
    //make sure the width of the simulation area takes up no more than half of the window
    if(BROWSER_HEIGHT/2 > BROWSER_WIDTH/2)
@@ -275,7 +274,6 @@ function drawPrevPathCircle(x, y)
  */
 function drawPathToBeExec(dir, speed)
 {
-   console.log("DDD: " + dir);
    if(recentered == true)
    {
       if(speed > 0)
@@ -334,7 +332,6 @@ function drawPointsPathToBeExec()
       pts.push(toX);
       pts.push(toY);
    }
-   console.log("Points: " + pts);
    
    var toBeExecuted = new Kinetic.Line({
       points: pts,
@@ -694,7 +691,6 @@ function circleExecution(figure8Mode)
       //validate and add loop data to array
       if(animating != "done" && animating != "reload")
       {
-         console.log("here: " + animating);
          //validate first loop of figure 8
          CIRCLE_RADIUS = document.getElementById("fig8_1_rad").value;
          INCLINATION = document.getElementById("fig8_1_inc").value;
@@ -738,7 +734,6 @@ function circleExecution(figure8Mode)
       
       if(status == true)
       {
-         console.log("loop : " + cur_loop);
          animateCircle(loops[cur_loop][0], loops[cur_loop][1], TIME);
       }
    }
@@ -889,7 +884,6 @@ function pushAndDrawWaypoint(waypoint)
    //add the waypoint to the array of waypoints
    waypoints.push(waypoint);
    drawPointsPathToBeExec();
-   console.log("Waypoint data: " + waypoint);
 }
 
 /* @brief Validate user input
@@ -1287,7 +1281,6 @@ function animateMecanum()
       matrix_mult_x += forward_kinematic[0][i] * wheel_rotations[i];
       matrix_mult_y += forward_kinematic[1][i] * wheel_rotations[i];
       matrix_mult_w += forward_kinematic[2][i] * wheel_rotations[i];
-      console.log(matrix_mult_w + "+=" +  forward_kinematic[2][i] + "*" + wheel_rotations[i]);
    }
 
    var Vx = (RADIUS/4) * matrix_mult_x;
@@ -1532,14 +1525,12 @@ function determineWaypointData(x, y, time, orientation)
          DIRECTION = Math.atan(deltaY/deltaX);
          //use Pythagoras' Theorem to get the distance to travel
          distance = Math.sqrt(Math.pow(deltaY,2) + Math.pow(deltaX,2));
-         console.log("A");
       }
       else
       {  
          //there is only movement in the x direction
          DIRECTION = 0;
          distance = deltaX;
-         console.log("B");
       }
    }
    else
@@ -1549,14 +1540,12 @@ function determineWaypointData(x, y, time, orientation)
          //there is only movement in the y direction
          DIRECTION = Math.atan(deltaY/deltaX);
          distance = deltaY;
-         console.log("C");
       }
       else
       {  
          //there is no movement
          DIRECTION = 0;
          distance = 0;
-         console.log("D");
       }
    }
 
@@ -1567,7 +1556,6 @@ function determineWaypointData(x, y, time, orientation)
    }
    else
    {
-      console.log("TIME is zero!!!!!");
       SPEED = 0;
    }
    
