@@ -66,6 +66,7 @@ getBroswerSize();
  
 //state variables
  var animating = false; //state of animation
+ var state = "loaded";
 
 //control variables
 var SPEED = 0;
@@ -623,6 +624,11 @@ function drawVehicle()
  */
 function goPressed(direction, speed, rotation)
 {
+   if(checkReload() == true)
+   {
+      return;
+   }
+
    reset();
    
    if(validateUserInput(direction, speed, rotation) == true)
@@ -639,6 +645,11 @@ function goPressed(direction, speed, rotation)
  */
 function mecanumExecution()
 {
+   if(checkReload() == true)
+   {
+      return;
+   }
+
    reset();
    
    //get user input
@@ -669,6 +680,11 @@ function mecanumExecution()
  */
 function circleExecution(figure8Mode)
 {
+   if(checkReload() == true)
+   {
+      return;
+   }
+
    //figure 8 mode
    if(figure8Mode)
    {
@@ -758,6 +774,11 @@ function circleExecution(figure8Mode)
  */
 function rectangleExecution()
 {
+   if(checkReload() == true)
+   {
+      return;
+   }
+
    reset();
 
    if(validateUserInputRectangle() == true)
@@ -775,13 +796,11 @@ function rectangleExecution()
  */
 function pointExecution(waypointMode)
 {
-   if(animating == "reload")
+   if(checkReload() == true)
    {
-      //TODO: this isn't ideal
-      alert("Please reload the page to perform another simulation.");
       return;
    }
-
+   
    if(waypointMode == true)
    {
       //animate
@@ -1269,7 +1288,7 @@ function animateMecanum()
       matrix_mult_w += forward_kinematic[2][i] * wheel_rotations[i];
       console.log(matrix_mult_w + "+=" +  forward_kinematic[2][i] + "*" + wheel_rotations[i]);
    }
-   console.log("MM" + matrix_mult_w);
+
    var Vx = (RADIUS/4) * matrix_mult_x;
    var Vy = (RADIUS/4) * matrix_mult_y;
    var Vw = (RADIUS/4) * matrix_mult_w;
@@ -1294,7 +1313,7 @@ function animateMecanum()
    }
    
    //determine how the sign of x and y will change
-   setSign(Vx, Vy);
+   setSignMecanum(Vx, Vy);
    
    //avoid dividing by negative
    if(Vx != 0)
@@ -1333,9 +1352,9 @@ function animateMecanum()
    drawPathToBeExec(DIRECTION, SPEED);
    
    //set state of animation to animating
-   animating = "vref";
+   animating = "mecanum";
    anim.start();
-   document.getElementById("state").innerHTML="Animating Vehicle Reference Point";
+   document.getElementById("state").innerHTML="Animating Wheel Mecanum mode";
    document.getElementById("cur_speed").innerHTML=(SPEED).toFixed(NUM_DEC_PLACES);
 } //end animateMecanum
 
@@ -1641,6 +1660,62 @@ function setSign(deltaX, deltaY)
   }
 }
 
+/* @brief Determine what value to give the x and y multipliers. These
+ * multipliers will be used to increase or decrease the x and y 
+ * coordinates of the vehicle during animation for mecanum mode
+ * @note The delta values are in pixels where y increases down and x
+ * increases right.
+ * @param deltaX The requested change in x
+ * @param deltaY The requested change in y
+ */
+function setSignMecanum(deltaX, deltaY)
+{
+  //positive
+  if(deltaY > 0 && deltaX > 0)
+  {
+     X_MULT = 1;
+     Y_MULT = -1;
+  }
+  //2nd quadrant
+  else if(deltaY > 0 && deltaX < 0)
+  {
+     X_MULT = -1;
+     Y_MULT = 1;
+  }
+  //3rd quadrant
+  else if(deltaY < 0 && deltaX < 0)
+  {
+     X_MULT = -1;
+     Y_MULT = 1;
+  }
+  //4th quadrant
+  else if(deltaY < 0 && deltaX > 0)
+  {
+     X_MULT = 1;
+     Y_MULT = -1;
+  }
+  //along an axis
+  else
+  {
+      Y_MULT = 1;
+      if(deltaX == 0)
+      {
+         X_MULT = 1;
+      }
+      else if(deltaY == 0)
+      {
+         if(deltaX < 0)
+         {
+            X_MULT = -1;
+         }
+      }
+      else
+      {
+         //impossible
+      }
+  }
+} //end setSignMecanum
+
 /* @brief Reposition viewable area when vehicle reference point travels within
  * 3 feet of screen edge
  */
@@ -1882,7 +1957,7 @@ stage.add(pathLayer);
  */
 document.onkeypress = function (e) 
 {
-   if(animating == "vref")
+   if(animating == "vref" || animating == "mecanum")
    {
       notAnimating();
    }
@@ -1893,7 +1968,7 @@ document.onkeypress = function (e)
 document.onclick = function (e) 
 {
    //if click is not on a button, stop the animation
-   if(e.target.id != "button" && animating == "vref")
+   if(e.target.id != "button" && (animating == "vref" || animating == "mecanum"))
    {
      notAnimating();
    }
@@ -1911,6 +1986,17 @@ function notAnimating()
    //set animation state to not animating 
    anim.stop();
    animPointExecution.stop();
-   animating = false;
-   document.getElementById("state").innerHTML="Not Animating";
+   animating = "reload";
+   document.getElementById("state").innerHTML="'Stop' Command Received";
 } //end notAnimating
+
+function checkReload()
+{
+   if(animating == "reload")
+   {
+      alert("Please click Reset to perform another simulation.");
+      return true;
+   }
+   
+   return false;
+}
