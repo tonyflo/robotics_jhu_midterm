@@ -275,6 +275,7 @@ function drawPrevPathCircle(x, y)
  */
 function drawPathToBeExec(dir, speed)
 {
+   console.log("DDD: " + dir);
    if(recentered == true)
    {
       if(speed > 0)
@@ -1312,9 +1313,6 @@ function animateMecanum()
       return;
    }
    
-   //determine how the sign of x and y will change
-   setSignMecanum(Vx, Vy);
-   
    //avoid dividing by negative
    if(Vx != 0)
    {
@@ -1342,6 +1340,9 @@ function animateMecanum()
          DIRECTION = 0;
       }
    }
+   
+   //adjust for upper-left origin canvas coordinate system
+   setSignMecanum(Vx, Vy);
    
    if(DEBUG == true)
    {
@@ -1660,60 +1661,30 @@ function setSign(deltaX, deltaY)
   }
 }
 
-/* @brief Determine what value to give the x and y multipliers. These
- * multipliers will be used to increase or decrease the x and y 
- * coordinates of the vehicle during animation for mecanum mode
+/* @brief Adjust for upper-left origin canvas coordinate system
  * @note The delta values are in pixels where y increases down and x
  * increases right.
  * @param deltaX The requested change in x
  * @param deltaY The requested change in y
  */
-function setSignMecanum(deltaX, deltaY)
+function setSignMecanum(Vx, Vy)
 {
-  //positive
-  if(deltaY > 0 && deltaX > 0)
-  {
-     X_MULT = 1;
-     Y_MULT = -1;
-  }
-  //2nd quadrant
-  else if(deltaY > 0 && deltaX < 0)
-  {
-     X_MULT = -1;
-     Y_MULT = 1;
-  }
-  //3rd quadrant
-  else if(deltaY < 0 && deltaX < 0)
-  {
-     X_MULT = -1;
-     Y_MULT = 1;
-  }
-  //4th quadrant
-  else if(deltaY < 0 && deltaX > 0)
-  {
-     X_MULT = 1;
-     Y_MULT = -1;
-  }
-  //along an axis
-  else
-  {
-      Y_MULT = 1;
-      if(deltaX == 0)
-      {
-         X_MULT = 1;
-      }
-      else if(deltaY == 0)
-      {
-         if(deltaX < 0)
-         {
-            X_MULT = -1;
-         }
-      }
-      else
-      {
-         //impossible
-      }
-  }
+   if(Vx > 0)
+   {
+      DIRECTION = -DIRECTION;
+   }
+   else if(Vx < 0 && Vy < 0)
+   {
+      DIRECTION += 90;
+   }
+   else if(Vx < 0 && Vy == 0)
+   {
+      DIRECTION += 180;
+   }
+   else if(Vx < 0 && Vy > 0)
+   {
+      DIRECTION += 270;
+   }
 } //end setSignMecanum
 
 /* @brief Reposition viewable area when vehicle reference point travels within
