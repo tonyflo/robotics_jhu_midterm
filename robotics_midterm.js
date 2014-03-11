@@ -175,7 +175,7 @@ var bby = rect.getPosition().y + feetToPixels(BUFFER) + VEHICLE_HEIGHT_PX/2;
  * Debug
  *
  ****************************/
-var DEBUG = true;
+var DEBUG = false;
  
 //draw bounds markers
 if(DEBUG)
