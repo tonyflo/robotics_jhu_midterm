@@ -1591,7 +1591,14 @@ function determineWaypointData(x, y, time, orientation)
       ROTATION = 0;
    }
    
-   return speedLimit();
+   if(speedLimit() == true)
+   {
+      return true;
+   }
+   
+   document.getElementById("state").innerHTML="Finished, Reload";
+   animating = "reload";
+   return false;
 } //end determineWaypointData
 
 function speedLimit()
