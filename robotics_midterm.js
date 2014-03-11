@@ -4,13 +4,16 @@
  * Midterm Project
  * Given: 29 Jan 2014
  * Due: 12 Mar 2014
+ * File: robotics_midterm.js
+ * Description: Main logic for Robotics midterm project
  */
-
+ 
 /****************************
  *
  * Browser Set-up
  *
  ****************************/
+ 
 var BROWSER_WIDTH = 0;
 var BROWSER_HEIGHT = 0;
 var HEIGHT_PX = 0; //height of canvas
@@ -278,7 +281,7 @@ function drawPathToBeExec(dir, speed)
          var toBeExecuted = new Kinetic.Line({
             points: [CENTER_X, CENTER_Y, CENTER_X + (PATH_LEN * Math.cos(toRadians(dir))), CENTER_Y + (PATH_LEN * Math.sin(toRadians(dir)))],
             stroke: 'green',
-            strokeWidth: 1,
+            strokeWidth: 2,
             lineCap: 'round',
             lineJoin: 'round'
          });
@@ -303,7 +306,7 @@ function drawPathToBeExecCircle(rad, inc)
      y: CENTER_Y,
      radius: rad,
      stroke: 'green',
-     strokeWidth: 1
+     strokeWidth: 2
    });
    
    inc += 180; //realign coordinate systems
@@ -334,7 +337,7 @@ function drawPointsPathToBeExec()
    var toBeExecuted = new Kinetic.Line({
       points: pts,
       stroke: 'green',
-      strokeWidth: 1,
+      strokeWidth: 2,
       lineCap: 'round',
       lineJoin: 'round'
    });
@@ -809,7 +812,10 @@ function validateWaypoint()
       
       if(validateUserInputPointExecution() == true)
       {
-         addWaypoint();
+         if(determineWaypointData(X, Y, TIME, ORIENTATION) == true)
+         {
+            addWaypoint();
+         }
          return true;
       }
       else
@@ -1445,7 +1451,28 @@ function animateRectangle()
  */
 function animatePointExecution(x, y, time, orientation)
 {
-   console.log("here....");
+   var status = determineWaypointData(x, y, time, orientation);
+   
+   if(status == true)
+   {
+      animating = true;
+      animPointExecution.start();
+      document.getElementById("state").innerHTML="Animating Point Execution";
+      document.getElementById("cur_speed").innerHTML=(SPEED).toFixed(NUM_DEC_PLACES);
+   }
+
+} //end animatePointexecution
+
+/* @brief Get waypoint animation data prior to execution
+ * @param x The destination x coordinate
+ * @param y The destination y coordinate
+ * @param time The value that the user entered for time
+ * @param orientation The orientation that the vehicle will be at the 
+ * @return true if waypoint is valid, false otherwise
+ * destination
+ */
+function determineWaypointData(x, y, time, orientation)
+{
    //determine the direction to the end point
    var whereAmI_x = GLOBAL_X + pixelsToFeet(rect.getPosition().x - CENTER_X);
    var whereAmI_y = -(GLOBAL_Y + pixelsToFeet(rect.getPosition().y - CENTER_Y)); //negate y
@@ -1544,14 +1571,8 @@ function animatePointExecution(x, y, time, orientation)
       ROTATION = 0;
    }
    
-   if(speedLimit() == true)
-   {
-      animating = true;
-      animPointExecution.start();
-      document.getElementById("state").innerHTML="Animating Point Execution";
-      document.getElementById("cur_speed").innerHTML=(SPEED).toFixed(NUM_DEC_PLACES);
-   }
-} //end animatePointexecution
+   return speedLimit();
+} //end determineWaypointData
 
 function speedLimit()
 {
@@ -1754,6 +1775,7 @@ function pixelsToFeet(pixels)
  */
 function reload()
 {
+   getInput();
    location.reload();
 } //end reload
 
@@ -1827,6 +1849,10 @@ function reset()
  * Main
  *
  ****************************/
+ 
+ //set input fields with any previous values
+ setInput();
+
 //draw grid
 drawGridlines();
 

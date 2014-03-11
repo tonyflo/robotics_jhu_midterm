@@ -20,6 +20,7 @@
       });
    </script>
    <script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v5.0.1.min.js"></script>
+   <script src="cookies.js" defer="defer"></script>
    <script src="robotics_midterm.js" defer="defer"></script>
    <div style="position:absolute; left:50%; top:0px; width:50%; overflow-y: scroll; height:100%">
       <div class="collapsable">
@@ -29,7 +30,7 @@
             <label>Speed (ft/sec):</label><input type="text" name="speed" id="speed"><br>
             <label>Rate of Rotation (deg/sec):</label><input type="text" name="rotation" id="rotation"><br>
             <button id="button" onclick="goPressed(document.getElementById('direction').value, document.getElementById('speed').value, document.getElementById('rotation').value)">Go</button>
-            <button onclick="reset()">Reset</button>
+            <button onclick="reload()">Reset</button>
          </div>
          <h3 class="heading">&#x25bc; Mecanum Wheel Mode</h3>
          <div class="content">
@@ -39,7 +40,7 @@
             <label>Wheel 3:</label><input type="text" name="w3" id="w3">
             <label>Wheel 4:</label><input type="text" name="w4" id="w4"><br>
             <button id="button" onclick="mecanumExecution()">Go</button>
-            <button onclick="reset()">Reset</button>
+            <button onclick="reload()">Reset</button>
          </div>
          <h3 class="heading">&#x25bc; Point Execution Mode</h3>
          <div  class="content">
@@ -49,7 +50,7 @@
             <label>End Orientation (deg):</label><input type="text" name="orientation" id="orientation"><br>
             <button id="button" onclick="pointExecution(false)">Go</button>
             <button onclick="validateWaypoint()">Add</button>
-            <button onclick="reset()">Reset</button><br><br>
+            <button onclick="reload()">Reset</button><br><br>
             <caption>Waypoints</caption>
             <table id="waypoints" border="1">
             <tr><th>X</th><th>Y</th><th>Time</th><th>Orientation</th></tr>
@@ -63,14 +64,14 @@
             <label>Inclination (deg):</label><input type="text" name="circle_inc" id="circle_inc"><br>
             <label>Time (sec):</label><input type="text" name="circle_sec" id="circle_sec"><br>
             <button id="button" onclick="circleExecution(false)">Go</button>
-            <button onclick="reset()">Reset</button>
+            <button onclick="reload()">Reset</button>
             <h4>Rectangle</h4>
             <label>Width (ft):</label><input type="text" name="rect_w" id="rect_w"><br>
             <label>Height (ft):</label><input type="text" name="rect_h" id="rect_h"><br>
             <label>Inclination (deg):</label><input type="text" name="rect_inc" id="rect_inc"><br>
             <label>Time (sec):</label><input type="text" name="rect_sec" id="rect_sec"><br>
             <button id="button" onclick="rectangleExecution()">Go</button>
-            <button onclick="reset()">Reset</button>
+            <button onclick="reload()">Reset</button>
             <h4>Figure 8</h4>
             <label>Radius 1 (ft):</label><input type="text" name="fig8_1_rad" id="fig8_1_rad"><br>
             <label>Inclination 1 (deg):</label><input type="text" name="fig8_1_inc" id="fig8_1_inc"><br>
@@ -78,7 +79,7 @@
             <label>Inclination 2 (deg):</label><input type="text" name="fig8_2_inc" id="fig8_2_inc"><br>
             <label>Time (sec):</label><input type="text" name="fig8_sec" id="fig8_sec"><br>
             <button id="button" onclick="circleExecution(true)">Go</button>
-            <button onclick="reset()">Reset</button>
+            <button onclick="reload()">Reset</button>
          </div>
       </div>
       <div>
@@ -95,7 +96,7 @@
             <tr><td><b>Rotation:</b></td><td id="cur_rot">0.00</td><td>deg</td></tr>
          </table>
          <p>Vehicle is drawn to scale.</p>
-         <button onclick="reload()">Reload Page</button>
+         <button onclick="deleteAllCookies(); location.reload()">Reload Page</button>
       </div>
    </div>
   </body>
