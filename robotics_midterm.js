@@ -383,11 +383,11 @@ var anim = new Kinetic.Animation(function(frame)
    
    //update global vehicle coordinates
    CANVAS_X = pixelsToFeet(newX - CENTER_X);
-   CANVAS_Y = pixelsToFeet(Math.abs(newY - CENTER_Y))
+   CANVAS_Y = pixelsToFeet(Math.abs(newY - CENTER_Y));
    
    //update the diagnostic coordinates text on the page
    document.getElementById("x_coord").innerHTML=(GLOBAL_X + CANVAS_X).toFixed(NUM_DEC_PLACES);
-   document.getElementById("y_coord").innerHTML=(GLOBAL_Y + CANVAS_Y).toFixed(NUM_DEC_PLACES);
+   document.getElementById("y_coord").innerHTML=-(GLOBAL_Y + CANVAS_Y).toFixed(NUM_DEC_PLACES);
 
    //rotate the vehicle
    if(ROTATION != 0)
@@ -512,7 +512,7 @@ var animPointExecution = new Kinetic.Animation(function(frame)
    
    //update the diagnostic coordinates text on the page
    document.getElementById("x_coord").innerHTML=(GLOBAL_X + CANVAS_X).toFixed(NUM_DEC_PLACES);
-   document.getElementById("y_coord").innerHTML=(GLOBAL_Y + CANVAS_Y).toFixed(NUM_DEC_PLACES);
+   document.getElementById("y_coord").innerHTML=-(GLOBAL_Y + CANVAS_Y).toFixed(NUM_DEC_PLACES);
 
    //rotate the vehicle
    if(ROTATION != 0)
