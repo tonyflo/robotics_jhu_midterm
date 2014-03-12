@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/strict.dtd">
+<html>
+<head>
+<META http-equiv=Content-Type content="text/html; charset=UTF-8">
+<title>Exported from Notepad++</title>
+<style type="text/css">
+span {
+	font-family: 'Courier New';
+	font-size: 10pt;
+	color: #E0E2E4;
+}
+.sc0 {
+}
+.sc1 {
+	color: #818E96;
+}
+.sc2 {
+	color: #818E96;
+}
+.sc3 {
+	color: #6C788C;
+}
+.sc4 {
+	color: #FFCD22;
+}
+.sc5 {
+	font-weight: bold;
+	color: #93C763;
+}
+.sc6 {
+	color: #EC7600;
+}
+.sc7 {
+	color: #EC7600;
+}
+.sc10 {
+	color: #E8E2B7;
+}
+.sc11 {
+}
+</style>
+</head>
+<body>
+<div style="float: left; white-space: pre; line-height: 1; background: #293134; "><span class="sc1">/* Tony Florida
+ * EN 605.713 Robotics
+ * Johns Hopkins University
+ * Midterm Project
+ * Given: 29 Jan 2014
+ * Due: 12 Mar 2014
+ * File: cookies.js
+ * Description: Save user input when page is reloaded using cookies
+ */</span><span class="sc0">
+
+ </span><span class="sc3">/****************************
+ *
+ * Cookies
+ *
+ ****************************/</span><span class="sc0">
+ 
+ </span><span class="sc2">//list of input fields
+</span><span class="sc5">var</span><span class="sc0"> </span><span class="sc11">input</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> 
+</span><span class="sc10">[</span><span class="sc0">
+   </span><span class="sc6">"direction"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"speed"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"rotation"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"w1"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"w2"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"w3"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"w4"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"pointX"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"pointY"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"time"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"orientation"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"circle_rad"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"circle_inc"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"circle_sec"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"rect_w"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"rect_h"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"rect_inc"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"rect_sec"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"fig8_1_rad"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"fig8_1_inc"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"fig8_2_rad"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"fig8_2_inc"</span><span class="sc10">,</span><span class="sc0">
+   </span><span class="sc6">"fig8_sec"</span><span class="sc0">
+</span><span class="sc10">];</span><span class="sc0">
+
+</span><span class="sc1">/* http://www.w3schools.com/js/js_cookies.asp
+ */</span><span class="sc0">
+</span><span class="sc5">function</span><span class="sc0"> </span><span class="sc11">setCookie</span><span class="sc10">(</span><span class="sc11">cname</span><span class="sc10">,</span><span class="sc11">cvalue</span><span class="sc10">,</span><span class="sc11">exdays</span><span class="sc10">)</span><span class="sc0">
+</span><span class="sc10">{</span><span class="sc0">
+   </span><span class="sc5">var</span><span class="sc0"> </span><span class="sc11">d</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">new</span><span class="sc0"> </span><span class="sc11">Date</span><span class="sc10">();</span><span class="sc0">
+   </span><span class="sc11">d</span><span class="sc10">.</span><span class="sc11">setTime</span><span class="sc10">(</span><span class="sc11">d</span><span class="sc10">.</span><span class="sc11">getTime</span><span class="sc10">()+(</span><span class="sc11">exdays</span><span class="sc10">*</span><span class="sc4">24</span><span class="sc10">*</span><span class="sc4">60</span><span class="sc10">*</span><span class="sc4">60</span><span class="sc10">*</span><span class="sc4">1000</span><span class="sc10">));</span><span class="sc0">
+   </span><span class="sc5">var</span><span class="sc0"> </span><span class="sc11">expires</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc6">"expires="</span><span class="sc10">+</span><span class="sc11">d</span><span class="sc10">.</span><span class="sc11">toGMTString</span><span class="sc10">();</span><span class="sc0">
+   </span><span class="sc11">document</span><span class="sc10">.</span><span class="sc11">cookie</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">cname</span><span class="sc10">+</span><span class="sc6">"="</span><span class="sc10">+</span><span class="sc11">cvalue</span><span class="sc10">+</span><span class="sc6">"; "</span><span class="sc10">+</span><span class="sc11">expires</span><span class="sc10">;</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0">
+
+</span><span class="sc1">/* http://www.w3schools.com/js/js_cookies.asp
+ */</span><span class="sc0">
+</span><span class="sc5">function</span><span class="sc0"> </span><span class="sc11">getCookie</span><span class="sc10">(</span><span class="sc11">cname</span><span class="sc10">)</span><span class="sc0">
+</span><span class="sc10">{</span><span class="sc0">
+   </span><span class="sc5">var</span><span class="sc0"> </span><span class="sc11">name</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">cname</span><span class="sc0"> </span><span class="sc10">+</span><span class="sc0"> </span><span class="sc6">"="</span><span class="sc10">;</span><span class="sc0">
+   </span><span class="sc5">var</span><span class="sc0"> </span><span class="sc11">ca</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">document</span><span class="sc10">.</span><span class="sc11">cookie</span><span class="sc10">.</span><span class="sc11">split</span><span class="sc10">(</span><span class="sc7">';'</span><span class="sc10">);</span><span class="sc0">
+   </span><span class="sc5">for</span><span class="sc10">(</span><span class="sc5">var</span><span class="sc0"> </span><span class="sc11">i</span><span class="sc10">=</span><span class="sc4">0</span><span class="sc10">;</span><span class="sc0"> </span><span class="sc11">i</span><span class="sc10">&lt;</span><span class="sc11">ca</span><span class="sc10">.</span><span class="sc11">length</span><span class="sc10">;</span><span class="sc0"> </span><span class="sc11">i</span><span class="sc10">++)</span><span class="sc0"> 
+   </span><span class="sc10">{</span><span class="sc0">
+      </span><span class="sc5">var</span><span class="sc0"> </span><span class="sc11">c</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">ca</span><span class="sc10">[</span><span class="sc11">i</span><span class="sc10">].</span><span class="sc11">trim</span><span class="sc10">();</span><span class="sc0">
+      </span><span class="sc5">if</span><span class="sc0"> </span><span class="sc10">(</span><span class="sc11">c</span><span class="sc10">.</span><span class="sc11">indexOf</span><span class="sc10">(</span><span class="sc11">name</span><span class="sc10">)==</span><span class="sc4">0</span><span class="sc10">)</span><span class="sc0"> </span><span class="sc5">return</span><span class="sc0"> </span><span class="sc11">c</span><span class="sc10">.</span><span class="sc11">substring</span><span class="sc10">(</span><span class="sc11">name</span><span class="sc10">.</span><span class="sc11">length</span><span class="sc10">,</span><span class="sc11">c</span><span class="sc10">.</span><span class="sc11">length</span><span class="sc10">);</span><span class="sc0">
+   </span><span class="sc10">}</span><span class="sc0">
+   </span><span class="sc5">return</span><span class="sc0"> </span><span class="sc6">""</span><span class="sc10">;</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0">
+
+</span><span class="sc5">function</span><span class="sc0"> </span><span class="sc11">deleteAllCookies</span><span class="sc10">()</span><span class="sc0">
+</span><span class="sc10">{</span><span class="sc0">
+   </span><span class="sc5">for</span><span class="sc10">(</span><span class="sc5">var</span><span class="sc0"> </span><span class="sc11">i</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc4">0</span><span class="sc10">;</span><span class="sc0"> </span><span class="sc11">i</span><span class="sc0"> </span><span class="sc10">&lt;</span><span class="sc0"> </span><span class="sc11">input</span><span class="sc10">.</span><span class="sc11">length</span><span class="sc10">;</span><span class="sc0"> </span><span class="sc11">i</span><span class="sc10">++)</span><span class="sc0">
+   </span><span class="sc10">{</span><span class="sc0">
+      </span><span class="sc11">setCookie</span><span class="sc10">(</span><span class="sc11">input</span><span class="sc10">[</span><span class="sc11">i</span><span class="sc10">],</span><span class="sc6">""</span><span class="sc10">,-</span><span class="sc4">1</span><span class="sc10">);</span><span class="sc0">
+   </span><span class="sc10">}</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0">
+
+</span><span class="sc1">/* @brief Add all input params to cookies
+ */</span><span class="sc0">
+</span><span class="sc5">function</span><span class="sc0"> </span><span class="sc11">getInput</span><span class="sc10">()</span><span class="sc0">
+</span><span class="sc10">{</span><span class="sc0">
+   </span><span class="sc5">for</span><span class="sc10">(</span><span class="sc5">var</span><span class="sc0"> </span><span class="sc11">i</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc4">0</span><span class="sc10">;</span><span class="sc0"> </span><span class="sc11">i</span><span class="sc0"> </span><span class="sc10">&lt;</span><span class="sc0"> </span><span class="sc11">input</span><span class="sc10">.</span><span class="sc11">length</span><span class="sc10">;</span><span class="sc0"> </span><span class="sc11">i</span><span class="sc10">++)</span><span class="sc0">
+   </span><span class="sc10">{</span><span class="sc0">
+      </span><span class="sc5">var</span><span class="sc0"> </span><span class="sc11">val</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">document</span><span class="sc10">.</span><span class="sc11">getElementById</span><span class="sc10">(</span><span class="sc11">input</span><span class="sc10">[</span><span class="sc11">i</span><span class="sc10">]).</span><span class="sc11">value</span><span class="sc10">;</span><span class="sc0">
+      </span><span class="sc11">setCookie</span><span class="sc10">(</span><span class="sc11">input</span><span class="sc10">[</span><span class="sc11">i</span><span class="sc10">],</span><span class="sc11">val</span><span class="sc10">,</span><span class="sc4">30</span><span class="sc10">);</span><span class="sc0">
+   </span><span class="sc10">}</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0"> </span><span class="sc2">//end getInput
+</span><span class="sc0">
+</span><span class="sc1">/* @brief Get all input params from cookies
+ */</span><span class="sc0">
+</span><span class="sc5">function</span><span class="sc0"> </span><span class="sc11">setInput</span><span class="sc10">()</span><span class="sc0">
+</span><span class="sc10">{</span><span class="sc0">
+   </span><span class="sc5">for</span><span class="sc10">(</span><span class="sc5">var</span><span class="sc0"> </span><span class="sc11">i</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc4">0</span><span class="sc10">;</span><span class="sc0"> </span><span class="sc11">i</span><span class="sc0"> </span><span class="sc10">&lt;</span><span class="sc0"> </span><span class="sc11">input</span><span class="sc10">.</span><span class="sc11">length</span><span class="sc10">;</span><span class="sc0"> </span><span class="sc11">i</span><span class="sc10">++)</span><span class="sc0">
+   </span><span class="sc10">{</span><span class="sc0">
+      </span><span class="sc5">var</span><span class="sc0"> </span><span class="sc11">val</span><span class="sc10">=</span><span class="sc11">getCookie</span><span class="sc10">(</span><span class="sc11">input</span><span class="sc10">[</span><span class="sc11">i</span><span class="sc10">]);</span><span class="sc0">
+      </span><span class="sc11">document</span><span class="sc10">.</span><span class="sc11">getElementById</span><span class="sc10">(</span><span class="sc11">input</span><span class="sc10">[</span><span class="sc11">i</span><span class="sc10">]).</span><span class="sc11">value</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">val</span><span class="sc10">;</span><span class="sc0">
+   </span><span class="sc10">}</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0"> </span><span class="sc2">//end getInput</span></div></body>
+</html>

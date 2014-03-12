@@ -6,68 +6,78 @@
       <meta name="author" content="Tony Florida" />
    </head>
    <body>
+<pre>
+Tony Florida
+EN 605.713 Robotics
+Johns Hopkins University
+Midterm Project
+Given: 29 Jan 2014
+Due: 12 Mar 2014
+Written Documentation
+</pre>
+      <a href="../pdf/documentation.pdf">View as PDF</a>
       <h3>Kinematic Equations</h3>
       <ul>
          <li>Forward Kinematic Equations</li>
             <h4>Equation</h4>
-            <img src="img/forward_equation.png"/>
+            <img src="../img/forward_equation.png"/>
             <h4>Code</h4>
-            <img src="img/forward_code.png"/>
+            <img src="../img/forward_code.png"/>
          <li>Inverse Kinematic Equations</li>
             <h4>Equation</h4>
-            <img src="img/inverse_equation.png"/>
+            <img src="../img/inverse_equation.png"/>
             <h4>Code</h4>
-            <img src="img/inverse_code.png"/>
+            <img src="../img/inverse_code.png"/>
       </ul>
       <h3>Control Algorithm</h3>
          <h5>Calculating Animation Data</h5>
          <p>The following algorithm validates user input and calculates the data necessary to perform the animation of the vehicle. Animation data includes direction, rotation, and speed.  The algorithm also considers the fact that the origin of the canvas is in the upper left corner of the screen whereas the global origin is initially in the center of the canvas.</p>
          <ol>
             <li>Validate user input</li>
-               <img src="img/validate_input.png"/>
+               <img src="../img/validate_input.png"/>
             <li>Apply user input to appropriate kinematic equation</li>
-               <img src="img/forward_implement.png"/>
+               <img src="../img/forward_implement.png"/>
             <li>Adjust rotation to align canvas coordinate system with Cartesian coordinate system</li>
-               <img src="img/align_cs.png"/>
+               <img src="../img/align_cs.png"/>
             <li>Determine velocity vector from X and Y components using Pythagorean's Theorem</li>
-               <img src="img/pythagoras.png"/>
+               <img src="../img/pythagoras.png"/>
             <li>Check max vehicle speed</li>
-               <img src="img/speed_limit.png"/>
+               <img src="../img/speed_limit.png"/>
             <li>Draw path to be executed</li>
-               <img src="img/path.png"/>
+               <img src="../img/path.png"/>
          </ol>
          <h5>Animation</h5>
-         <p>The following algorithm takes the animation data that was calculated above and passes it to the appropriate KineticJS function to perform the animation.</p>
+         <p>The following algorithm takes the animation data that was calculated above, adjusts it based on the frame rate, and passes it to the appropriate KineticJS function to perform the animation.</p>
          <ol>
             <li>Determine new X coordinate based off of X component of velocity vector</li>
-               <img src="img/newx.png"/>
+               <img src="../img/newx.png"/>
             <li>Determine new Y coordinate based off of Y component of velocity vector</li>
-               <img src="img/newy.png"/>
+               <img src="../img/newy.png"/>
             <li>Move the vehicle</li>
-               <img src="img/move.png"/>
+               <img src="../img/move.png"/>
             <li>Draw the path the the vehicle has traversed</li>
-               <img src="img/previous_path.png"/>
+               <img src="../img/previous_path.png"/>
             <li>Update global coordinates</li>
-               <img src="img/global_coordinates.png"/>
+               <img src="../img/global_coordinates.png"/>
             <li>Rotate the vehicle</li>
-               <img src="img/rotate_vehicle.png"/>
+               <img src="../img/rotate_vehicle.png"/>
             <li>Determine if the vehicle has come within 3 feet of canvas edge</li>
-               <img src="img/reposition.png"/>
+               <img src="../img/reposition.png"/>
          </ol>
          <h5>Waypoints</h5>
          <p>Waypoints leverage "The 3 Questions" of autonomous mobile robots: Where Am I?, Where Am I Going?, How Do I Get There?</p>
          <ol>
             <li>Where Am I?</li>
-               <img src="img/whereami.png"/>
+               <img src="../img/whereami.png"/>
             <li>Where Am I Going?</li>
-               <img src="img/whereamigoing.png"/>
+               <img src="../img/whereamigoing.png"/>
             <li>How Do I Get There?</li>
-               <img src="img/delta.png"/>
+               <img src="../img/delta.png"/>
          </ol>
       <h3>Math Equations</h3>
       <ul>
          <li>Pythagorean's Theorem</li>
-            <img src="img/pythagoras.png"/>
+            <img src="../img/pythagoras.png"/>
       </ul>
   </body>
 </html>
