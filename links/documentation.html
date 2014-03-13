@@ -16,16 +16,29 @@ Due: 12 Mar 2014
 Written Documentation
 </pre>
       <a href="../pdf/documentation.pdf">View as PDF</a>
+      <h3>Notes/Assumptions</h3>
+      <ul>
+         <li>Vehicle and wheels are drawn to scale.</li>
+         <li>Vehicle coordinate system aligns with global coordinate system upon page load.</li>
+         <li>Each cell in the grid is 6" x 6".</li>
+         <li>Environment is flat, high friction, infinite area.</li>
+         <li>Max speed of vehicle is 15 ft/sec.</li>
+         <li>Angles are specified clockwise from the positive Y axis.</li>
+      </ul>
       <h3>Kinematic Equations</h3>
       <ul>
          <li>Forward Kinematic Equations</li>
             <h4>Equation</h4>
             <img src="../img/forward_equation.png"/>
+            <h4>Implementation</h4>
+            <img src="../img/forward_implement.png"/>
             <h4>Code</h4>
             <img src="../img/forward_code.png"/>
          <li>Inverse Kinematic Equations</li>
             <h4>Equation</h4>
             <img src="../img/inverse_equation.png"/>
+            <h4>Implementation</h4>
+            <img src="../img/inverse_implement.png"/>
             <h4>Code</h4>
             <img src="../img/inverse_code.png"/>
       </ul>
@@ -35,7 +48,7 @@ Written Documentation
          <ol>
             <li>Validate user input</li>
                <img src="../img/validate_input.png"/>
-            <li>Apply user input to appropriate kinematic equation</li>
+            <li>Apply user input to forward kinematic equation</li>
                <img src="../img/forward_implement.png"/>
             <li>Adjust rotation to align canvas coordinate system with Cartesian coordinate system</li>
                <img src="../img/align_cs.png"/>
@@ -50,8 +63,10 @@ Written Documentation
          <p>The following algorithm takes the animation data that was calculated above, adjusts it based on the frame rate, and passes it to the appropriate KineticJS function to perform the animation.</p>
          <ol>
             <li>Determine new X coordinate based off of X component of velocity vector</li>
+               <img src="../img/control_x.png"/><br>
                <img src="../img/newx.png"/>
             <li>Determine new Y coordinate based off of Y component of velocity vector</li>
+               <img src="../img/control_y.png"/><br>
                <img src="../img/newy.png"/>
             <li>Move the vehicle</li>
                <img src="../img/move.png"/>
@@ -60,6 +75,7 @@ Written Documentation
             <li>Update global coordinates</li>
                <img src="../img/global_coordinates.png"/>
             <li>Rotate the vehicle</li>
+               <img src="../img/control_rot.png"/><br>
                <img src="../img/rotate_vehicle.png"/>
             <li>Determine if the vehicle has come within 3 feet of canvas edge</li>
                <img src="../img/reposition.png"/>
@@ -73,6 +89,16 @@ Written Documentation
                <img src="../img/whereamigoing.png"/>
             <li>How Do I Get There?</li>
                <img src="../img/delta.png"/>
+         </ol>
+         <h5>Circle</h5>
+         <p>The control algorithm for the circle path mode is very similar to Mecanum mode with the following additions.</p>
+         <ol>
+            <li>Calculate the circumference of the circle and determine the vehicle speed based on given time. This code is called only once prior to begining the animation.</li>
+               <img src="../img/circle_speed.png"/>
+            <li>Determine how many degrees per frame the vehicle needs to move.</li>
+               <img src="../img/circle_degrees.png"/>
+            <li>Determine the new coordinates for the vehicle based on the X and Y components of the speed and the frame rate.</li>
+               <img src="../img/circle_coords.png"/>
          </ol>
       <h3>Math Equations</h3>
       <ul>

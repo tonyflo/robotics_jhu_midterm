@@ -76,9 +76,8 @@
             <button onclick="reload()">Reset</button>
             <h4>Figure 8</h4>
             <label>Radius 1 (ft):</label><input type="text" name="fig8_1_rad" id="fig8_1_rad"><br>
-            <label>Inclination 1 (deg):</label><input type="text" name="fig8_1_inc" id="fig8_1_inc"><br>
             <label>Radius 2 (ft):</label><input type="text" name="fig8_2_rad" id="fig8_2_rad"><br>
-            <label>Inclination 2 (deg):</label><input type="text" name="fig8_2_inc" id="fig8_2_inc"><br>
+            <label>Inclination (deg):</label><input type="text" name="fig8_inc" id="fig8_inc"><br>
             <label>Time per loop (sec):</label><input type="text" name="fig8_sec" id="fig8_sec"><br>
             <button id="button" onclick="circleExecution(true)">Go</button>
             <button onclick="reload()">Reset</button>
@@ -106,6 +105,7 @@
             <li>Each cell in the grid is 6" x 6".</li>
             <li>Environment is flat, high friction, infinite area.</li>
             <li>Max speed of vehicle is 15 ft/sec.</li>
+            <li>Angles are specified clockwise from the positive Y axis.</li>
             </ul>
          </div>
          <h3 class="heading">&#x25bc; Links</h3>

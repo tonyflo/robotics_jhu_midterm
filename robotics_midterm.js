@@ -685,13 +685,13 @@ function circleExecution(figure8Mode)
       {
          //validate first loop of figure 8
          CIRCLE_RADIUS = document.getElementById("fig8_1_rad").value;
-         INCLINATION = document.getElementById("fig8_1_inc").value;
+         INCLINATION = document.getElementById("fig8_inc").value;
          TIME = document.getElementById("fig8_sec").value; 
          if(validateUserInputCircle() == true)
          {
             //fill in input
             document.getElementById("fig8_1_rad").value=CIRCLE_RADIUS;
-            document.getElementById("fig8_1_inc").value=INCLINATION;
+            document.getElementById("fig8_inc").value=INCLINATION;
             document.getElementById("fig8_sec").value=TIME;
             loops.push([CIRCLE_RADIUS, INCLINATION]);
             
@@ -705,17 +705,17 @@ function circleExecution(figure8Mode)
          
          //validate second loop of figure 8
          CIRCLE_RADIUS = document.getElementById("fig8_2_rad").value;
-         INCLINATION = document.getElementById("fig8_2_inc").value;
+         INCLINATION = document.getElementById("fig8_inc").value;
          TIME = document.getElementById("fig8_sec").value; 
          if(validateUserInputCircle() == true)
          {
             //fill in input
             document.getElementById("fig8_2_rad").value=CIRCLE_RADIUS;
-            document.getElementById("fig8_2_inc").value=INCLINATION;
+            document.getElementById("fig8_inc").value=INCLINATION;
             document.getElementById("fig8_sec").value=TIME;
-            loops.push([CIRCLE_RADIUS, INCLINATION]);
+            loops.push([CIRCLE_RADIUS, INCLINATION - 180]);
             
-            DIRECTION = parseFloat(INCLINATION) -180; //adjust direction to align with vehicle coordinate system
+            DIRECTION = parseFloat(INCLINATION); //adjust direction to align with vehicle coordinate system
             drawPathToBeExecCircle(feetToPixels(CIRCLE_RADIUS), DIRECTION);
          }
          else
@@ -999,9 +999,9 @@ function pushAndDrawWaypoint(waypoint)
     var status = new Boolean(1);
    
    CIRCLE_RADIUS = document.getElementById("fig8_1_rad").value;
-   INCLINATION = document.getElementById("fig8_1_inc").value;
+   INCLINATION = document.getElementById("fig8_inc").value;
    CIRCLE_RADIUS2 = document.getElementById("fig8_2_rad").value;
-   INCLINATION2 = document.getElementById("fig8_2_inc").value;
+   INCLINATION2 = INCLINATION - 180;
    TIME = document.getElementById("fig8_sec").value;
    
    //check for numeric input
@@ -1057,9 +1057,8 @@ function pushAndDrawWaypoint(waypoint)
    
    //fill in input
    document.getElementById("fig8_1_rad").value = CIRCLE_RADIUS;
-   document.getElementById("fig8_1_inc").value = INCLINATION;
+   document.getElementById("fig8_inc").value = INCLINATION;
    document.getElementById("fig8_2_rad").value = CIRCLE_RADIUS2;
-   document.getElementById("fig8_2_inc").value = INCLINATION2;
    document.getElementById("fig8_sec").value = TIME;
 
    return status;
@@ -1247,7 +1246,7 @@ function animate()
    ROTATION = parseInt(document.getElementById("rotation").value);
    
    //adjust angles so that vehicle and global coordinate systems line up
-   DIRECTION -= 90;
+   DIRECTION -= 90;   
    
    //draw path to be executed
    drawPathToBeExec(DIRECTION, SPEED);
@@ -1263,21 +1262,11 @@ function animate()
  */
 function animateMecanum()
 {
-   //determine x and y component of velocity using forward kinematic equation
-   //as well as rotation
-   var matrix_mult_x = 0;
-   var matrix_mult_y = 0;
-   var matrix_mult_w = 0;
-   for(var i = 0; i < wheel_rotations.length; i++)
-   {
-      matrix_mult_x += forward_kinematic[0][i] * wheel_rotations[i];
-      matrix_mult_y += forward_kinematic[1][i] * wheel_rotations[i];
-      matrix_mult_w += forward_kinematic[2][i] * wheel_rotations[i];
-   }
-
-   var Vx = (RADIUS/4) * matrix_mult_x;
-   var Vy = (RADIUS/4) * matrix_mult_y;
-   var Vw = (RADIUS/4) * matrix_mult_w;
+   var arr = forwardKinematic();
+   
+   var Vx = arr[0];
+   var Vy = arr[1];
+   var Vw = arr[2];
    
    //rotation in degrees
    ROTATION = -toDegrees(Vw);
@@ -1591,6 +1580,51 @@ function speedLimit()
    }
    
    return true;
+}
+
+/* @brief Implementation of forward kinematic equation
+ */
+function forwardKinematic()
+{
+   //determine x and y component of velocity using forward kinematic equation
+   //as well as rotation
+   var matrix_mult_x = 0;
+   var matrix_mult_y = 0;
+   var matrix_mult_w = 0;
+   for(var i = 0; i < wheel_rotations.length; i++)
+   {
+      matrix_mult_x += forward_kinematic[0][i] * wheel_rotations[i];
+      matrix_mult_y += forward_kinematic[1][i] * wheel_rotations[i];
+      matrix_mult_w += forward_kinematic[2][i] * wheel_rotations[i];
+   }
+
+   var Vx = (RADIUS/4) * matrix_mult_x;
+   var Vy = (RADIUS/4) * matrix_mult_y;
+   var Vw = (RADIUS/4) * matrix_mult_w;
+
+  return [Vx, Vy, Vw];
+}   
+
+/* @brief Implementation of inverse kinematic equation
+ */
+function inverseKinematic(vx, vy, w)
+{
+   var arr = [vx, vy, w];
+   var wheel_rot = [0, 0, 0, 0];
+   
+   for(var i = 0; i < arr.length; i++)
+   {
+      wheel_rot[0] += inverse_kinematic[0][i] * arr[i];
+      wheel_rot[1] += inverse_kinematic[1][i] * arr[i];
+      wheel_rot[2] += inverse_kinematic[2][i] * arr[i];
+      wheel_rot[3] += inverse_kinematic[2][i] * arr[i];
+   }
+
+   for(var i = 0; i < wheel_rot.lenght; i++)
+   {
+      wheel_rot[i] *= (1/RADIUS);
+   }
+   return wheel_rot;
 }
 
 /* @brief Determine what value to give the x and y multipliers. These

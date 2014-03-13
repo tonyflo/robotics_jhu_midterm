@@ -36,9 +36,8 @@ var input =
    "rect_inc",
    "rect_sec",
    "fig8_1_rad",
-   "fig8_1_inc",
+   "fig8_inc",
    "fig8_2_rad",
-   "fig8_2_inc",
    "fig8_sec"
 ];
 
